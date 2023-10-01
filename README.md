@@ -1,4 +1,4 @@
-EFFERVECREANET:DAGOMA/MAGIS 3D Objects Source
+EFFERVECREANET:DAGOMA/MAGIS (https://dagoma.fr) 3D Objects Source
 
 3DOBJECTS:
 -	garbage collector for a small kitchen (composteur.c)
