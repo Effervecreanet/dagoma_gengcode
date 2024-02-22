@@ -1,11 +1,11 @@
-EFFERVECREANET:DAGOMA/MAGIS (https://dagoma.fr) 3D Objects Source
+EFFERVECREANET:DAGOMA/MAGIS(NEVA) (https://dagoma.fr) 3D Objects Source
 
 3DOBJECTS:
 -	garbage collector for a small kitchen (composteur.c)
 -	COVID-19: visor first gen (visor_1stgen.cpp)
 -	COVID-19: visor second gen (visor_2ndgen.cpp)
 
-Source code for generating several 3D objects to print with a Dagoma Magis.
+Source code for generating several 3D objects to print with a Dagoma Magis and Neva.
 You have to input the Z_START because the start on Z axis is not the same on all the 3d printer Magis.
 Once you have specified it with temperature and speed too, redirect the output to a file whose filename
 is dagoma0.g and put it in a SD card you insert in the 3d printer Magis. These 3d objects source code
