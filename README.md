@@ -16,6 +16,8 @@ you compiled *.c or *.cpp files, you generate the 3D Gcode with the following co
 
 ./visor_2ndgen -4.999 254 107 > dagoma0.g
 
+A win32 user interface is also featured in the directories cmdUI.
+
 More info on https://www.behance.net/francklesage
 
 http://www.effervecrea.net
