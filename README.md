@@ -1,6 +1,6 @@
 # EFFERVECREANET:DAGOMA/MAGIS(NEVA) (https://dagoma.fr) 3D Objects Source
 
-_3DOBJECTS:_
+__3DOBJECTS:__
 -	garbage collector for a small kitchen (composteur.c)
 -	COVID-19: visor first gen (visor_1stgen.cpp)
 -	COVID-19: visor second gen (visor_2ndgen.cpp)
