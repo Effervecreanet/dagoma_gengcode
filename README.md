@@ -1,4 +1,4 @@
-# EFFERVECREANET:DAGOMA/MAGIS(NEVA)SIGMA (https://dagoma.fr) 3D Objects Source
+# EFFERVECREANET:DAGOMA/MAGIS(NEVA)SIGMA (https://dagoma3d.fr) 3D Objects Source
 
 __3DOBJECTS:__
 -	garbage collector for a small kitchen (composteur.c)
