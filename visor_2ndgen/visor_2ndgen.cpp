@@ -130,7 +130,7 @@ int main(int argc, char **argv) {
 #define Y_STEP 0.10
 #define X_STEP 0.10
 
-#define STEP_E1 0.011
+#define STEP_E1 0.012
 #define STEP_E2 0.012
 
 #define X_START -70.00
