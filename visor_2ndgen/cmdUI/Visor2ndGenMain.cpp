@@ -266,7 +266,7 @@ int main(int argc, char** argv)
     HWND consoleWindow;
     enum dataType dt;
 
-    SetConsoleTitleA("Effervecreanet | Magis");
+    SetConsoleTitleA("Effervecreanet | Sigma");
     SetConsoleCP(28591);
     SetConsoleOutputCP(28591);
     
