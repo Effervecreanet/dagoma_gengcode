@@ -1067,12 +1067,12 @@ static void genGCODE(void) {
     fprintf(stdout, "G1 Z%.3f\n", Z);
   }
 
-  E += 1.100;
+  E += 1.000;
   fprintf(stdout, "G1 E%.3f\n", E);
 
   fprintf(stdout, "G4 S2\n");
 
-  E += 1.100;
+  E += 1.000;
   fprintf(stdout, "G1 E%.3f\n", E);
 
 
@@ -1133,12 +1133,12 @@ static void genGCODE(void) {
 
   fprintf(stdout, "G1 F%hu X%.3f Y%.3f Z%.3f\n", F_WHOLE, X_START, Y_START, Z);
 
-  E += 1.100;
+  E += 0.900;
   fprintf(stdout, "G1 E%.3f\n", E);
 
   fprintf(stdout, "G4 S120\n");
 
-  E += 1.100;
+  E += 0.900;
   fprintf(stdout, "G1 E%.3f\n", E);
 
 
