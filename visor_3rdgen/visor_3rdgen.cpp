@@ -1011,6 +1011,7 @@ static void genGCODE(void) {
   E += STEP_E1;
   E += STEP_E1;
   E += STEP_E1;
+  E += STEP_E1;
 
   for (layer = LAYER_BRANCH - (LAYER_BRANCH / 10); --layer;) {
     branch.Go();
