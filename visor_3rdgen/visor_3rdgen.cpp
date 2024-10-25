@@ -1001,17 +1001,11 @@ static void genGCODE(void) {
 
   fprintf(stdout, "G4 S2\n");
 
-  E += 1.100;
+  E += 1.300;
   fprintf(stdout, "G1 E%.3f\n", E);
 
 
-  E += STEP_E1;
-  E += STEP_E1;
-  E += STEP_E1;
-  E += STEP_E1;
-  E += STEP_E1;
-  E += STEP_E1;
-  E += STEP_E1;
+  E += STEP_E1 * 10;
 
   for (layer = LAYER_BRANCH - (LAYER_BRANCH / 10); --layer;) {
     branch.Go();
