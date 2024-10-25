@@ -1146,6 +1146,8 @@ static void genGCODE(void) {
   E += STEP_E1;
   E += STEP_E1;
   E += STEP_E1;
+  E += STEP_E1;
+  E += STEP_E1;
 
   for (layer = 6, padY = 0.76; --layer;) {
 
