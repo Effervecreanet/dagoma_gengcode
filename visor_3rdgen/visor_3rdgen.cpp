@@ -996,12 +996,12 @@ static void genGCODE(void) {
     fprintf(stdout, "G1 Z%.3f\n", Z);
   }
 
-  E += 1.100;
+  E += 1.400;
   fprintf(stdout, "G1 E%.3f\n", E);
 
   fprintf(stdout, "G4 S2\n");
 
-  E += 1.300;
+  E += 1.400;
   fprintf(stdout, "G1 E%.3f\n", E);
 
 
