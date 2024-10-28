@@ -399,7 +399,7 @@ static void genGCODE(void) {
   Branch branch, subBranch, remainBranch, left2right, BaseLeft2Right,
       right2zero, back2front, headEdge;
   headSide sideRight, sideLeft, subSideLeft0, subSideLeft1, subSideLeft2,
-      subSideLeft3, clipsSideLeft, clipsSideRight;
+      subSideLeft3;
   headSide edgeSideLeft0, edgeSideLeft1, edgeSideRight0, edgeSideRight1;
   Clips clipsLeft, clipsRight;
 
@@ -411,13 +411,6 @@ static void genGCODE(void) {
   branch.New(Y_START, Y_END);
   subBranch.New(Y_START, Y_END + 4.000);
   remainBranch.New(Y_END + 4.000, Y_END);
-
-  clipsSideLeft.New(
-      std::make_pair((float)-23.0, (float)(Y_START / 2)),
-      std::make_pair((float)((float)abs(X_START) - 28.0), (float)Y_START / 2));
-  clipsSideRight.New(
-      std::make_pair((float)-23.0, (float)(Y_START / 4)),
-      std::make_pair((float)((float)abs(X_START) - 28.0), (float)Y_START / 4));
 
   sideLeft.New(std::make_pair((float)X_START, (float)Y_END),
                std::make_pair((float)0.0, (float)Y_EDGE));
@@ -544,14 +537,14 @@ static void genGCODE(void) {
   }
 
 
-  E -= 0.450;
+  E -= 1.000;
   fprintf(stdout, "G1 E%.3f\n", E);
 
   Z = Z_START;
 
   fprintf(stdout, "G1 F%hu X%.3f Y%.3f Z%.3f\n", F_WHOLE, (float)90.00, (float)-35.00, Z);
 
-  E += 0.450;
+  E += 0.900;
 
   for (layer = 0, padX = 0.76; layer < 2; ++layer) {
     clipsRight.Go();
@@ -1330,12 +1323,12 @@ static void genGCODE(void) {
   subSideLeft1.clear();
   subSideLeft2.clear();
   subSideLeft3.clear();
-  clipsSideLeft.clear();
-  clipsSideRight.clear();
   edgeSideLeft0.clear();
   edgeSideLeft1.clear();
   edgeSideRight0.clear();
   edgeSideRight1.clear();
+  clipsLeft.clear();
+  clipsRight.clear();
 
   return;
 }
