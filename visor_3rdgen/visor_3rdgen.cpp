@@ -1330,5 +1330,6 @@ static void genGCODE(void) {
   clipsLeft.clear();
   clipsRight.clear();
 
+  /* EOF */
   return;
 }
