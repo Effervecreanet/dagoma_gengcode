@@ -1119,10 +1119,10 @@ static void genGCODE(void) {
 
   headEdge.Return();
 
-  E -= 2.000;
+  E -= 1.000;
   fprintf(stdout, "G1 E%.3f\n", E);
 
-  fprintf(stdout, "G1 F%hu X%.3f Y%.3f Z%.3f\n", F_WHOLE, X_START, Y_START, Z);
+  fprintf(stdout, "G1 F%hu X%.3f Y%.3f Z%.3f\n", F_WHOLE, X_START, Y_START + 5.00, Z);
 
   fprintf(stdout, "G4 S120\n");
 
