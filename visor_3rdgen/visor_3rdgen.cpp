@@ -1136,7 +1136,7 @@ static void genGCODE(void) {
   fprintf(stdout, "G4 S6\n");
 
 
-  E += STEP_E1 * 18;
+  E += STEP_E1 * 19;
 
   for (layer = 6, padY = 0.76; --layer;) {
 
