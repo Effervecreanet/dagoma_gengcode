@@ -155,6 +155,23 @@ static void heat0deg(void) {
   return;
 }
 
+static void stamp(void)
+{
+        struct tm *tmv;
+        time_t timet;
+        char buff[512];
+
+        printf("; Generated at ");
+        time(&timet);
+        tmv = localtime(&timet);
+        strftime(buff, 512,"%a %b %e %H:%M:%S %Y", tmv);
+        printf("%s\n", buff);
+        printf("; Author: Franck Lesage (effervecreanet@orange.fr) http://www.effervecrea.net\n");
+
+
+        return;
+}
+
 static void init_marlin(void) {
 
   fprintf(stdout, "G90\n");
@@ -173,6 +190,7 @@ static void genGCODE(void) {
   int layer;
   double X_END_STEP_1 = 0.400;
 
+  stamp();
   init_marlin();
 
   X_END_RIGHT = 70.000;
