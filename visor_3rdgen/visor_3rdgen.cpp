@@ -1129,11 +1129,11 @@ static void genGCODE(void) {
   E += 1.000;
   fprintf(stdout, "G1 E%.3f\n", E);
 
-  E += 1.100;
+  E += 1.000;
   fprintf(stdout, "G1 E%.3f\n", E);
 
   fprintf(stdout, "G1 F%hu X%.3f Y%.3f Z%.3f\n", F_WHOLE, X_START, Y_START, Z);
-  fprintf(stdout, "G4 S6\n");
+  fprintf(stdout, "G4 S3\n");
 
 
   E += STEP_E1 * 18;
