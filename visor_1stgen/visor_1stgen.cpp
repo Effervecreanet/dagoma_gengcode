@@ -6,7 +6,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <vector>
+
 
 using namespace std;
 
@@ -253,6 +255,16 @@ void genGCODE(void) {
 	unsigned short F;
 	int layer = 0;
 	Branch BaseLeft2Right;
+        struct tm *tmv;
+        time_t timet;
+        char buff[512];
+
+        printf("; Generated at ");
+        time(&timet);
+        tmv = localtime(&timet);
+        strftime(buff, 512,"%a %b %e %H:%M:%S %Y", tmv);
+        printf("%s\n", buff);
+        printf("; Author: Franck Lesage (effervecreanet@orange.fr) http://www.effervecrea.net\n");
 
 	X = X_START;
 	Y = Y_START;
