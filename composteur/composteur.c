@@ -160,12 +160,13 @@ static void stamp(void)
 {
         struct tm *tmv;
         time_t timet;
-        char buff[512];
+        char buff[128];
 
         fprintf(stdout, "; Generated at ");
         time(&timet);
         tmv = localtime(&timet);
-        strftime(buff, 512,"%a %b %e %H:%M:%S %Y", tmv);
+        ZeroMemory(buff, 128);
+        strftime(buff, 128,"%a %b %e %H:%M:%S %Y", tmv);
         fprintf(stdout, "%s\n", buff);
         fprintf(stdout, "; Author: Franck Lesage (effervecreanet@orange.fr) http://www.effervecrea.net\n");
 
