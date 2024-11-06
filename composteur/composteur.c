@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #define USER_INPUT_MAXLEN sizeof("000.000") - 1
 
@@ -13,7 +14,7 @@ float Z_START = 0.0;
 
 
 static void genGCODE(void);
-
+static void stamp(void);
 
 static void help(char *progname) {
   printf("usage: %s [Z_START] [HEAT_TEMP] [PRINT_SPEED]\n\n", progname);
@@ -155,30 +156,13 @@ static void heat0deg(void) {
   return;
 }
 
-#if defined(WIN32) && !defined(UNIX)
-
-static void stamp(void)
-{
-  SYSTEMTIME SystemTime;
-
-  ZeroMemory(&SystemTime, sizeof(SYSTEMTIME));
-  GetLocalTime(&SystemTime);
-
-  printf("; Generated at ");
-  printf("")
-
-  return;
-}
-
-#elif defined(UNIX) && !defined(WIN32)
-
 static void stamp(void)
 {
         struct tm *tmv;
         time_t timet;
         char buff[512];
 
-        fprintf(stdout"; Generated at ");
+        fprintf(stdout, "; Generated at ");
         time(&timet);
         tmv = localtime(&timet);
         strftime(buff, 512,"%a %b %e %H:%M:%S %Y", tmv);
@@ -188,8 +172,6 @@ static void stamp(void)
 
         return;
 }
-
-#endif
 
 static void init_marlin(void) {
 
