@@ -155,22 +155,41 @@ static void heat0deg(void) {
   return;
 }
 
+#if defined(WIN32) && !defined(UNIX)
+
+static void stamp(void)
+{
+  SYSTEMTIME SystemTime;
+
+  ZeroMemory(&SystemTime, sizeof(SYSTEMTIME));
+  GetLocalTime(&SystemTime);
+
+  printf("; Generated at ");
+  printf("")
+
+  return;
+}
+
+#elif defined(UNIX) && !defined(WIN32)
+
 static void stamp(void)
 {
         struct tm *tmv;
         time_t timet;
         char buff[512];
 
-        printf("; Generated at ");
+        fprintf(stdout"; Generated at ");
         time(&timet);
         tmv = localtime(&timet);
         strftime(buff, 512,"%a %b %e %H:%M:%S %Y", tmv);
-        printf("%s\n", buff);
-        printf("; Author: Franck Lesage (effervecreanet@orange.fr) http://www.effervecrea.net\n");
+        fprintf(stdout, "%s\n", buff);
+        fprintf(stdout, "; Author: Franck Lesage (effervecreanet@orange.fr) http://www.effervecrea.net\n");
 
 
         return;
 }
+
+#endif
 
 static void init_marlin(void) {
 
