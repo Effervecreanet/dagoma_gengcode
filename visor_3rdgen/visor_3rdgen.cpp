@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <vector>
 
 using namespace std;
@@ -159,6 +160,23 @@ static void heat0deg(void) {
   fprintf(stdout, "G28\n");
 
   return;
+}
+
+static void stamp(void)
+{
+	struct tm *tmv;
+	time_t timet;
+	char buff[512];
+
+	printf("; Generated at ");
+	time(&timet);
+	tmv = localtime(&timet);
+	strftime(buff, 512,"%a %b %e %H:%M:%S %Y", tmv);
+	printf("%s\n", buff);
+	printf("; Author: Franck Lesage (effervecreanet@orange.fr) http://www.effervecrea.net\n");
+
+
+	return;
 }
 
 static void init_marlin(void) {
@@ -456,6 +474,8 @@ static void genGCODE(void) {
   clipsRight.New(std::make_pair((float) 90.00, (float) -35.00),
 	  	 std::make_pair((float) 90.00, (float) 32.00));
 
+  /* Author stamp */
+  stamp();
   /* Init marlin abs_pos */
   init_marlin();
 
