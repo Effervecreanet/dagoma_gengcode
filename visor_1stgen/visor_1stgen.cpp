@@ -10,6 +10,7 @@
 #include <vector>
 
 
+
 using namespace std;
 
 #define USER_INPUT_MAXLEN sizeof("000.000") - 1
@@ -18,6 +19,7 @@ unsigned short heat_temp;
 unsigned short F_WHOLE;
 float Z_START = 0.0;
 
+static void stamp(void);
 static void genGCODE(void);
 
 static void help(char *progname) {
@@ -123,6 +125,7 @@ int main(int argc, char **argv) {
     return 2;
   }
 
+  stamp();
   genGCODE();
 
   return 0;
@@ -251,20 +254,27 @@ static void heat0deg(void) {
   return;
 }
 
+static void stamp(void)
+{
+  struct tm *tmv;
+  time_t timet;
+  char buff[128];
+
+  fprintf(stdout, "; Generated at ");
+  time(&timet);
+  tmv = localtime(&timet);
+  memset(buff, 0, 128);
+  strftime(buff, 128,"%a %b %e %H:%M:%S %Y", tmv);
+  fprintf(stdout, "%s\n", buff);
+  fprintf(stdout, "; Author: Franck Lesage (effervecreanet@orange.fr) http://www.effervecrea.net\n");
+
+  return;
+}
+
 void genGCODE(void) {
 	unsigned short F;
 	int layer = 0;
 	Branch BaseLeft2Right;
-        struct tm *tmv;
-        time_t timet;
-        char buff[512];
-
-        printf("; Generated at ");
-        time(&timet);
-        tmv = localtime(&timet);
-        strftime(buff, 512,"%a %b %e %H:%M:%S %Y", tmv);
-        printf("%s\n", buff);
-        printf("; Author: Franck Lesage (effervecreanet@orange.fr) http://www.effervecrea.net\n");
 
 	X = X_START;
 	Y = Y_START;

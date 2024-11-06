@@ -158,20 +158,19 @@ static void heat0deg(void) {
 
 static void stamp(void)
 {
-        struct tm *tmv;
-        time_t timet;
-        char buff[128];
+  struct tm *tmv;
+  time_t timet;
+  char buff[128];
 
-        fprintf(stdout, "; Generated at ");
-        time(&timet);
-        tmv = localtime(&timet);
-        ZeroMemory(buff, 128);
-        strftime(buff, 128,"%a %b %e %H:%M:%S %Y", tmv);
-        fprintf(stdout, "%s\n", buff);
-        fprintf(stdout, "; Author: Franck Lesage (effervecreanet@orange.fr) http://www.effervecrea.net\n");
+  fprintf(stdout, "; Generated at ");
+  time(&timet);
+  tmv = localtime(&timet);
+  memset(buff, 0, 128);
+  strftime(buff, 128,"%a %b %e %H:%M:%S %Y", tmv);
+  fprintf(stdout, "%s\n", buff);
+  fprintf(stdout, "; Author: Franck Lesage (effervecreanet@orange.fr) http://www.effervecrea.net\n");
 
-
-        return;
+  return;
 }
 
 static void init_marlin(void) {
