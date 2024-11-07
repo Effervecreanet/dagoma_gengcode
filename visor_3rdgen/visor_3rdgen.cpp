@@ -1,3 +1,5 @@
+/* This code is experimental, use it at your own risk */
+
 #include <algorithm>
 #include <ctype.h>
 #include <list>
