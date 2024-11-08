@@ -1142,6 +1142,17 @@ static void genGCODE(void) {
 
   headEdge.Return();
 
+  /* Headache begin here*/
+  Z += Z_STEP;
+  fprintf(stdout, "G1 Z%.3f\n", Z);
+
+  Z += Z_STEP;
+  fprintf(stdout, "G1 Z%.3f\n", Z);
+
+  Z += Z_STEP;
+  fprintf(stdout, "G1 Z%.3f\n", Z);
+  /* Headache end here */
+
   E -= 1.000;
   fprintf(stdout, "G1 E%.3f\n", E);
 
