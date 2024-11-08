@@ -1147,6 +1147,9 @@ static void genGCODE(void) {
 
   fprintf(stdout, "G1 F%hu X%.3f Y%.3f Z%.3f\n", F_WHOLE, X_START + 5.000, Y_START, Z);
 
+#define VERSION_A
+
+#if defined(VERSION_A)
   /* Headache begin here*/
   Z += Z_STEP;
   fprintf(stdout, "G1 Z%.3f\n", Z);
@@ -1166,7 +1169,8 @@ static void genGCODE(void) {
   Z += Z_STEP;
   fprintf(stdout, "G1 Z%.3f\n", Z);
   /* Headache end here */
-  
+#endif
+
   fprintf(stdout, "G4 S120\n");
 
   E += 1.000;
