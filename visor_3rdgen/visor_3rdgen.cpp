@@ -1159,15 +1159,6 @@ static void genGCODE(void) {
 
   Z += Z_STEP;
   fprintf(stdout, "G1 Z%.3f\n", Z);
-
-  Z += Z_STEP;
-  fprintf(stdout, "G1 Z%.3f\n", Z);
-
-  Z += Z_STEP;
-  fprintf(stdout, "G1 Z%.3f\n", Z);
-
-  Z += Z_STEP;
-  fprintf(stdout, "G1 Z%.3f\n", Z);
   /* Headache end here */
 #endif
 
