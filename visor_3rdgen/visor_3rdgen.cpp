@@ -1173,9 +1173,11 @@ static void genGCODE(void) {
   fprintf(stdout, "G1 F%hu X%.3f Y%.3f Z%.3f\n", F_WHOLE, X_START, Y_START, Z);
   fprintf(stdout, "G4 S3\n");
 
-
+#if defined(VERSION_A)
   E += STEP_E1 * 18;
-
+#else
+  E += STEP_E1 * 16;
+#endif
   for (layer = 6, padY = 0.76; --layer;) {
 
     branch.Go();
