@@ -1145,39 +1145,15 @@ static void genGCODE(void) {
   E -= 1.000;
   fprintf(stdout, "G1 E%.3f\n", E);
 
-  fprintf(stdout, "G1 F%hu X%.3f Y%.3f Z%.3f\n", F_WHOLE, X_START + 5.000, Y_START, Z);
-
-#define VERSION_A
-
-#if defined(VERSION_A)
-  /* Headache begin here*/
-  Z += Z_STEP;
-  fprintf(stdout, "G1 Z%.3f\n", Z);
-
-  Z += Z_STEP;
-  fprintf(stdout, "G1 Z%.3f\n", Z);
-
-  Z += Z_STEP;
-  fprintf(stdout, "G1 Z%.3f\n", Z);
-  /* Headache end here */
-#endif
+  fprintf(stdout, "G1 F%hu X%.3f Y%.3f Z%.3f\n", F_WHOLE, X_START, Y_START, Z);
 
   fprintf(stdout, "G4 S120\n");
-
-  E += 1.000;
-  fprintf(stdout, "G1 E%.3f\n", E);
-
-  E += 1.000;
-  fprintf(stdout, "G1 E%.3f\n", E);
 
   fprintf(stdout, "G1 F%hu X%.3f Y%.3f Z%.3f\n", F_WHOLE, X_START, Y_START, Z);
   fprintf(stdout, "G4 S3\n");
 
-#if defined(VERSION_A)
   E += STEP_E1 * 18;
-#else
-  E += STEP_E1 * 16;
-#endif
+
   for (layer = 6, padY = 0.76; --layer;) {
 
     branch.Go();
