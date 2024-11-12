@@ -7,7 +7,7 @@
 #pragma comment(lib, "user32.lib")
 
 
-DWORD64 total_gcode_lines = VISORGEN2_TOTAL_GCODE_LINES;
+DWORD64 total_gcode_lines = VISORGEN3_TOTAL_GCODE_LINES;
 extern int* funcThreadGenGCODE(LPVOID lpParameter);
 
 enum dataType {

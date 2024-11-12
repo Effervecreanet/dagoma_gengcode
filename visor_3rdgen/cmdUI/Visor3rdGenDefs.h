@@ -1,6 +1,6 @@
 
 #define GARBAGE_DAGOMA0G_SIGNATURE "; Effervecreanet - Visor 2nd Gen version: %s z_start: %s heat_temp: %s speed: %s"
-#define VISORGEN2_TOTAL_GCODE_LINES 3757322
+#define VISORGEN3_TOTAL_GCODE_LINES 3758389
 #define STR_PIPE_NAME "\\\\.\\pipe\\pipe_visor"
 
 
