@@ -214,7 +214,7 @@ init_marlin(HANDLE hPipe)
 	WritePipe(hPipe, "G90\n");
 	
     ZeroMemory(buf, 255);
-    sprintf(buf, "G1 F600 X%.3f Y%.3f Z%.3f\n", X_START, Y_START, Z);
+    sprintf(buf, "G1 F600 Z%.3f\n", Z);
     WritePipe(hPipe, buf);
 
     ZeroMemory(buf, 255);
@@ -258,6 +258,61 @@ WritePipe(HANDLE hPipe, CHAR *buffer)
 	return 1;
 }
 
+class Clips : public std::list<pair<float, float>> {
+private:
+  void pOut(float x, float y) {
+    char chBuf[255];
+
+    E += STEP_E2;
+    sprintf(chBuf, "G1 F%s E%.3f X%.3f Y%.3f\n", F_WHOLE, E, x, y);
+    WritePipe(hPipe, chBuf);
+    // printf("G1 F%hu X%.3f Y%.3f\n", F_WHOLE, x, y);
+
+    return;
+  }
+
+public:
+  void New(std::pair<float, float> startXY, std::pair<float, float> endXY);
+  void Go(void);
+  void Return(void);
+  void ShiftX(float pad);
+};
+
+void Clips::New(std::pair<float, float> startXY,
+		   std::pair<float, float> endXY) {
+    float X, Y;
+
+  for (X = startXY.first, Y = startXY.second; Y < endXY.second;
+       Y += Y_STEP)
+    this->push_back(std::make_pair(X, Y));
+
+	return;
+}
+
+void Clips::Go(void) {
+  for (std::list<pair<float, float>>::iterator it = this->begin();
+       it != this->end(); ++it)
+    this->pOut(it->first, it->second);
+
+  return;
+}
+
+void Clips::Return(void) {
+  this->reverse();
+  for (std::list<pair<float, float>>::iterator it = this->begin();
+       it != this->end(); ++it)
+    this->pOut(it->first, it->second);
+  this->reverse();
+
+  return;
+}
+
+void Clips::ShiftX(float pad) {
+  for (std::list<pair<float, float>>::iterator it = this->begin();
+       it != this->end(); ++it)
+    it->first += pad;
+}
+
 int* funcThreadGenGCODE(LPVOID lpParameter)
 {
 	CHAR chBuf[255];
@@ -270,10 +325,12 @@ int* funcThreadGenGCODE(LPVOID lpParameter)
 	int flag;
 	double X_END_STEP_1 = 0.400;
 	int layer;
-	float padY;
+	float padY, padX;
 	Branch branch, subBranch, remainBranch, left2right, BaseLeft2Right, right2zero, back2front, headEdge;
-	headSide sideRight, sideLeft, subSideLeft0, subSideLeft1, subSideLeft2, subSideLeft3, clipsSideLeft, clipsSideRight;
+	headSide sideRight, sideLeft, subSideLeft0, subSideLeft1, subSideLeft2, subSideLeft3;
 	headSide edgeSideLeft0, edgeSideLeft1, edgeSideRight0, edgeSideRight1;
+      Clips clipsLeft, clipsRight;
+
 
     BaseLeft2Right.New2(X_START - 1, (float)abs(X_START - 1));
     left2right.New2(X_START, (float)abs(X_START));
@@ -284,12 +341,6 @@ int* funcThreadGenGCODE(LPVOID lpParameter)
     subBranch.New(Y_START, Y_END + 4.000);
     remainBranch.New(Y_END + 4.000, Y_END);
 
-    clipsSideLeft.New(
-        std::make_pair((float)-23.0, (float)(Y_START / 2)),
-        std::make_pair((float)((float)abs(X_START) - 28.0), (float)Y_START / 2));
-    clipsSideRight.New(
-        std::make_pair((float)-23.0, (float)(Y_START / 4)),
-        std::make_pair((float)((float)abs(X_START) - 28.0), (float)Y_START / 4));
 
     sideLeft.New(std::make_pair((float)X_START, (float)Y_END),
         std::make_pair((float)0.0, (float)Y_EDGE));
@@ -327,6 +378,12 @@ int* funcThreadGenGCODE(LPVOID lpParameter)
 
     headEdge.New2(Y_EDGE, Y_EDGE + 4.000);
 
+      clipsLeft.New(std::make_pair((float) -90.00, (float) -35.00),
+	  	std::make_pair((float) -90.00, (float) 32.00));
+
+  clipsRight.New(std::make_pair((float) 90.00, (float) -35.00),
+	  	 std::make_pair((float) 90.00, (float) 32.00));
+
     Z = Z_START[0] == '-' ? -(atof(&Z_START[1])) : atof(Z_START);
 
 	hPipe = CreateFile("\\\\.\\pipe\\pipe_visor",
@@ -347,73 +404,24 @@ int* funcThreadGenGCODE(LPVOID lpParameter)
     /* Init marlin abs_pos */
     init_marlin(hPipe);
 
-    ZeroMemory(chBuf, 255);
-    sprintf(chBuf, "G1 F%s X%.3f Y%.3f Z%.3f\n", F_WHOLE, X_START, Y_START, Z);
-    WritePipe(hPipe, chBuf);
-
-    for (layer = 0, padY = 0.76; layer < 2; ++layer) {
-        clipsSideRight.Go();
-        clipsSideRight.ShiftY(padY);
-        clipsSideRight.Return();
-        clipsSideRight.ShiftY(padY);
-        clipsSideRight.Go();
-        clipsSideRight.ShiftY(padY);
-        clipsSideRight.Return();
-        clipsSideRight.ShiftY(padY);
-        clipsSideRight.Go();
-        clipsSideRight.ShiftY(padY);
-        clipsSideRight.Return();
-        clipsSideRight.ShiftY(padY);
-        if (padY <= 0.9 && padY >= 0.7)
-            padY = -0.76;
-        else
-            padY = 0.76;
-        clipsSideRight.ShiftY(padY);
-
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
-
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
-
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
-        
-        Z += Z_STEP / 2;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
-
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
-
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
-    }
-
-    padY = 0.76;
-    clipsSideRight.ShiftY(padY);
-
-    for (layer = 0, padY = 0.76; layer < 4; ++layer) {
-
-        clipsSideRight.Go();
-        clipsSideRight.ShiftY(padY);
-        clipsSideRight.Return();
-        clipsSideRight.ShiftY(padY);
-        clipsSideRight.Go();
-        clipsSideRight.ShiftY(padY);
-        clipsSideRight.Return();
-        clipsSideRight.ShiftY(padY);
-        if (padY <= 0.9 && padY >= 0.7)
-            padY = -0.76;
-        else
-            padY = 0.76;
-
-        clipsSideRight.ShiftY(padY);
+ for (layer = 0, padX = 0.76; layer < 2; ++layer) {
+    clipsLeft.Go();
+    clipsLeft.ShiftX(padX);
+    clipsLeft.Return();
+    clipsLeft.ShiftX(padX);
+    clipsLeft.Go();
+    clipsLeft.ShiftX(padX);
+    clipsLeft.Return();
+    clipsLeft.ShiftX(padX);
+    clipsLeft.Go();
+    clipsLeft.ShiftX(padX);
+    clipsLeft.Return();
+    clipsLeft.ShiftX(padX);
+    if (padX <= 0.9 && padX >= 0.7)
+      padX = -0.76;
+    else
+      padX = 0.76;
+    clipsLeft.ShiftX(padX);
 
         Z += Z_STEP;
         sprintf(chBuf, "G1 Z%.3f\n", Z);
@@ -427,7 +435,51 @@ int* funcThreadGenGCODE(LPVOID lpParameter)
         sprintf(chBuf, "G1 Z%.3f\n", Z);
         WritePipe(hPipe, chBuf);
 
-        Z += Z_STEP / 2;
+    Z += Z_STEP / 2;
+        sprintf(chBuf, "G1 Z%.3f\n", Z);
+        WritePipe(hPipe, chBuf);
+
+        Z += Z_STEP;
+        sprintf(chBuf, "G1 Z%.3f\n", Z);
+        WritePipe(hPipe, chBuf);
+
+        Z += Z_STEP;
+        sprintf(chBuf, "G1 Z%.3f\n", Z);
+        WritePipe(hPipe, chBuf);  }
+
+  padX = 0.76;
+  clipsLeft.ShiftX(padX);
+
+  for (layer = 0, padX = 0.76; layer < 4; ++layer) {
+
+    clipsLeft.Go();
+    clipsLeft.ShiftX(padX);
+    clipsLeft.Return();
+    clipsLeft.ShiftX(padX);
+    clipsLeft.Go();
+    clipsLeft.ShiftX(padX);
+    clipsLeft.Return();
+    clipsLeft.ShiftX(padX);
+    if (padX <= 0.9 && padX >= 0.7)
+      padX = -0.76;
+    else
+      padX = 0.76;
+
+    clipsLeft.ShiftX(padX);
+
+        Z += Z_STEP;
+        sprintf(chBuf, "G1 Z%.3f\n", Z);
+        WritePipe(hPipe, chBuf);
+
+        Z += Z_STEP;
+        sprintf(chBuf, "G1 Z%.3f\n", Z);
+        WritePipe(hPipe, chBuf);
+
+        Z += Z_STEP;
+        sprintf(chBuf, "G1 Z%.3f\n", Z);
+        WritePipe(hPipe, chBuf);
+
+    Z += Z_STEP / 2;
         sprintf(chBuf, "G1 Z%.3f\n", Z);
         WritePipe(hPipe, chBuf);
 
@@ -438,83 +490,38 @@ int* funcThreadGenGCODE(LPVOID lpParameter)
         Z += Z_STEP;
         sprintf(chBuf, "G1 Z%.3f\n", Z);
         WritePipe(hPipe, chBuf);
-    }
+}
 
-    E -= 0.450;
-    sprintf(chBuf, "G1 E%.3f\n", E);
+
+  E -= 1.000;
+  sprintf(chBuf, "G1 E%.3f\n", E);
     WritePipe(hPipe, chBuf);
 
     Z = Z_START[0] == '-' ? -(atof(&Z_START[1])) : atof(Z_START);
-    ZeroMemory(chBuf, 255);
-    sprintf(chBuf, "G1 F%s X%.3f Y%.3f Z%.3f\n", F_WHOLE, X_START, Y_START, Z);
+
+  sprintf(chBuf, "G1 F%s X%.3f Y%.3f Z%.3f\n", F_WHOLE, (float)90.00, (float)-35.00, Z);
     WritePipe(hPipe, chBuf);
 
-    E += 0.450;
+  E += 0.900;
 
-
-    for (layer = 0, padY = 0.76; layer < 2; ++layer) {
-        clipsSideLeft.Go();
-        clipsSideLeft.ShiftY(padY);
-        clipsSideLeft.Return();
-        clipsSideLeft.ShiftY(padY);
-        clipsSideLeft.Go();
-        clipsSideLeft.ShiftY(padY);
-        clipsSideLeft.Return();
-        clipsSideLeft.ShiftY(padY);
-        clipsSideLeft.Go();
-        clipsSideLeft.ShiftY(padY);
-        clipsSideLeft.Return();
-        clipsSideLeft.ShiftY(padY);
-        if (padY <= 0.9 && padY >= 0.7)
-            padY = -0.76;
-        else
-            padY = 0.76;
-        clipsSideLeft.ShiftY(padY);
-
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
-
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
-
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
-
-        Z += Z_STEP / 2;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
-
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
-
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
-    }
-
-    padY = 0.76;
-    clipsSideLeft.ShiftY(padY);
-
-    for (layer = 0, padY = 0.76; layer < 4; ++layer) {
-
-        clipsSideLeft.Go();
-        clipsSideLeft.ShiftY(padY);
-        clipsSideLeft.Return();
-        clipsSideLeft.ShiftY(padY);
-        clipsSideLeft.Go();
-        clipsSideLeft.ShiftY(padY);
-        clipsSideLeft.Return();
-        clipsSideLeft.ShiftY(padY);
-        if (padY <= 0.9 && padY >= 0.7)
-            padY = -0.76;
-        else
-            padY = 0.76;
-
-        clipsSideLeft.ShiftY(padY);
+  for (layer = 0, padX = 0.76; layer < 2; ++layer) {
+    clipsRight.Go();
+    clipsRight.ShiftX(padX);
+    clipsRight.Return();
+    clipsRight.ShiftX(padX);
+    clipsRight.Go();
+    clipsRight.ShiftX(padX);
+    clipsRight.Return();
+    clipsRight.ShiftX(padX);
+    clipsRight.Go();
+    clipsRight.ShiftX(padX);
+    clipsRight.Return();
+    clipsRight.ShiftX(padX);
+    if (padX <= 0.9 && padX >= 0.7)
+      padX = -0.76;
+    else
+      padX = 0.76;
+    clipsRight.ShiftX(padX);
 
         Z += Z_STEP;
         sprintf(chBuf, "G1 Z%.3f\n", Z);
@@ -528,7 +535,7 @@ int* funcThreadGenGCODE(LPVOID lpParameter)
         sprintf(chBuf, "G1 Z%.3f\n", Z);
         WritePipe(hPipe, chBuf);
 
-        Z += Z_STEP / 2;
+    Z += Z_STEP / 2;
         sprintf(chBuf, "G1 Z%.3f\n", Z);
         WritePipe(hPipe, chBuf);
 
@@ -539,7 +546,54 @@ int* funcThreadGenGCODE(LPVOID lpParameter)
         Z += Z_STEP;
         sprintf(chBuf, "G1 Z%.3f\n", Z);
         WritePipe(hPipe, chBuf);
-    }
+  }
+
+  padX = 0.76;
+  clipsRight.ShiftX(padX);
+
+  for (layer = 0, padX = 0.76; layer < 4; ++layer) {
+
+    clipsRight.Go();
+    clipsRight.ShiftX(padX);
+    clipsRight.Return();
+    clipsRight.ShiftX(padX);
+    clipsRight.Go();
+    clipsRight.ShiftX(padX);
+    clipsRight.Return();
+    clipsRight.ShiftX(padX);
+    if (padX <= 0.9 && padX >= 0.7)
+      padX = -0.76;
+    else
+      padX = 0.76;
+
+    clipsRight.ShiftX(padX);
+
+        Z += Z_STEP;
+        sprintf(chBuf, "G1 Z%.3f\n", Z);
+        WritePipe(hPipe, chBuf);
+
+        Z += Z_STEP;
+        sprintf(chBuf, "G1 Z%.3f\n", Z);
+        WritePipe(hPipe, chBuf);
+
+        Z += Z_STEP;
+        sprintf(chBuf, "G1 Z%.3f\n", Z);
+        WritePipe(hPipe, chBuf);
+
+    Z += Z_STEP / 2;
+        sprintf(chBuf, "G1 Z%.3f\n", Z);
+        WritePipe(hPipe, chBuf);
+
+        Z += Z_STEP;
+        sprintf(chBuf, "G1 Z%.3f\n", Z);
+        WritePipe(hPipe, chBuf);
+
+        Z += Z_STEP;
+        sprintf(chBuf, "G1 Z%.3f\n", Z);
+        WritePipe(hPipe, chBuf);  }
+
+
+
 
     E -= 0.450;
     sprintf(chBuf, "G1 E%.3f\n", E);
@@ -988,17 +1042,17 @@ int* funcThreadGenGCODE(LPVOID lpParameter)
         WritePipe(hPipe, chBuf);
     }
 
-    E -= 0.450;
+  E += 1.400;
+  sprintf(chBuf, "G1 E%.3f\n", E);
+    WritePipe(hPipe, chBuf);
+
+  WritePipe(hPipe, "G4 S2\n");
+
+  E += 1.400;
     sprintf(chBuf, "G1 E%.3f\n", E);
     WritePipe(hPipe, chBuf);
-    E += 0.450;
 
-    sprintf(chBuf, "G4 S7\n");
-    WritePipe(hPipe, chBuf);
-    E += STEP_E1;
-    E += STEP_E1;
-    E += STEP_E1;
-    E += STEP_E1;
+  E += STEP_E1 * 11;
 
     for (layer = LAYER_BRANCH - (LAYER_BRANCH / 10); --layer;) {
         branch.Go();
@@ -1131,22 +1185,20 @@ int* funcThreadGenGCODE(LPVOID lpParameter)
     WritePipe(hPipe, chBuf);
     headEdge.Return();
 
-    E -= 0.450;
-    sprintf(chBuf, "G1 E%.3f\n", E);
+  E -= 1.000;
+  sprintf(chBuf, "G1 E%.3f\n", E);
     WritePipe(hPipe, chBuf);
 
-    ZeroMemory(chBuf, 255);
-    sprintf(chBuf, "G1 F%s X%.3f Y%.3f Z%.3f\n", F_WHOLE, X_START, Y_START, Z);
-    WritePipe(hPipe, chBuf);
-    
-    E += 0.450;
+  sprintf(chBuf, "G1 F%s X%.3f Y%.3f Z%.3f\n", F_WHOLE, X_START, Y_START, Z);
+      WritePipe(hPipe, chBuf);
 
-    E += STEP_E1;
-    sprintf(chBuf, "G4 S120\n");
-    WritePipe(hPipe, chBuf);
-    E += STEP_E1;
-    E += STEP_E1;
+  WritePipe(hPipe, "G4 S60\n");
 
+  E += 0.100;
+  sprintf(chBuf, "G1 E%.3f\n", E);
+      WritePipe(hPipe, chBuf);
+
+  E += STEP_E1 * 4;
 
     for (layer = 6, padY = 0.76; --layer;) {
 
@@ -1338,7 +1390,7 @@ int* funcThreadGenGCODE(LPVOID lpParameter)
 
     branch.clear(); subBranch.clear(); remainBranch.clear(); left2right.clear(); right2zero.clear(); back2front.clear(); headEdge.clear();
     sideRight.clear(); sideLeft.clear(); subSideLeft0.clear(); subSideLeft1.clear(); subSideLeft2.clear(); subSideLeft3.clear();
-    clipsSideLeft.clear(); clipsSideRight.clear(); edgeSideLeft0.clear(); edgeSideLeft1.clear(); edgeSideRight0.clear(); edgeSideRight1.clear();
+    clipsLeft.clear(); clipsRight.clear(); edgeSideLeft0.clear(); edgeSideLeft1.clear(); edgeSideRight0.clear(); edgeSideRight1.clear();
 
     return (int*)0;
 }
