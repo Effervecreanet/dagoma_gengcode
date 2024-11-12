@@ -237,7 +237,7 @@ init_marlin(HANDLE hPipe)
 	WritePipe(hPipe, "G90\n");
 	
     ZeroMemory(buf, 255);
-    sprintf(buf, "G1 F600 Z%.3f\n", Z);
+    sprintf(buf, "G1 F300 Z%.3f\n", Z);
     WritePipe(hPipe, buf);
 
     ZeroMemory(buf, 255);
