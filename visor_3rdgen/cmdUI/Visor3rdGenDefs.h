@@ -8,7 +8,7 @@
 
 #define USER_INFO_STRING3 "Objet 3d:         visière avec trous pour carreaux"
 
-#define USER_INFO_STRING9 "Version:          1.1.1 - 05/10/2024"
+#define USER_INFO_STRING9 "Version:          1.2.0 - 11/11/2024"
 
 #define USER_INFO_STRING1  "Effervecreanet - Impression 3d sigma dagoma"
 #define USER_INFO_STRING2  "Entrez valeur calibrage plateau (valeur comprise entre -40.000 et 200.000):"
@@ -23,7 +23,7 @@
 
 #define USER_INFO_STRING3 "3d object:        visor with holes for plexiglas or glasses"
 
-#define USER_INFO_STRING9 "Version:          1.1.2 - 05/10/2024"
+#define USER_INFO_STRING9 "Version:          1.2.0 - 11/11/2024"
 
 #define USER_INFO_STRING1 "Effervecreanet - 3d sigma dagoma printing"
 #define USER_INFO_STRING2 "Enter calibrating point (number between -40.000 and 200.000):"

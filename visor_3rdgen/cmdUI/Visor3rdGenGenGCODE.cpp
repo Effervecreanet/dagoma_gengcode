@@ -37,6 +37,28 @@ HANDLE hPipe;
 
 int WritePipe(HANDLE hPipe, CHAR* buffer);
 
+static void stamp(void)
+{
+  struct tm *tmv;
+  time_t timet;
+  char buff[128];
+
+  time(&timet);
+  tmv = localtime(&timet);
+  memset(buff, 0, 128);
+  strftime(buff, 128,"; Generated at %a %b %e %H:%M:%S %Y\n", tmv);
+  WritePipe(hPipe, buff);
+  memset(buff, 0, 128);
+//  sprintf(buff, "; With z_start: %s heat temp: %s speed: %s\n", Z_START, heatTemp, F_WHOLE);
+  sprintf(buff, "; With z_start: %s heat temp: %s speed: %s\n", Z_START, heatTemp, F_WHOLE);
+  WritePipe(hPipe, buff);
+  WritePipe(hPipe, "; Author: Franck Lesage\n");
+  WritePipe(hPipe, "; Website: http://www.effervecrea.net\n");
+  WritePipe(hPipe, "; E-mail: effervecreanet@orange.fr\n");
+
+  return;
+}
+
 class Branch : public std::list<float> {
 private:
     void pOut(float y, bool noextrude) {
@@ -211,6 +233,7 @@ init_marlin(HANDLE hPipe)
 {
     char buf[255];
 
+    ZeroMemory(buf, 255);
 	WritePipe(hPipe, "G90\n");
 	
     ZeroMemory(buf, 255);
@@ -400,7 +423,9 @@ int* funcThreadGenGCODE(LPVOID lpParameter)
 	}	
 
     Z = Z_START[0] == '-' ? -(atof(&Z_START[1])) : atof(Z_START);
-
+    
+    stamp();
+    
     /* Init marlin abs_pos */
     init_marlin(hPipe);
 
@@ -1122,12 +1147,20 @@ int* funcThreadGenGCODE(LPVOID lpParameter)
         WritePipe(hPipe, chBuf);
     }
 
-    E += 0.450;
+  E += 1.000;
+  sprintf(chBuf, "G1 E%.3f\n", E);
+  WritePipe(hPipe, chBuf);
 
-    sprintf(chBuf, "G4 S7\n");
-    WritePipe(hPipe, chBuf);
-    E += STEP_E1;
-    E += STEP_E1;
+  WritePipe(hPipe, "G4 S2\n");
+
+  E += 1.000;
+  sprintf(chBuf, "G1 E%.3f\n", E);
+  WritePipe(hPipe, chBuf);
+
+  E += STEP_E1;
+  E += STEP_E1;
+  E += STEP_E1;
+  E += STEP_E1;
 
     layer = LAYER_BRANCH - (LAYER_BRANCH / 10);
     layer--;

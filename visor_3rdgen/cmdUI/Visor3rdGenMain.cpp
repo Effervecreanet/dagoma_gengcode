@@ -247,7 +247,7 @@ int main(int argc, char** argv)
     HANDLE hThrdObj3d;
     HANDLE hFile;
     DWORD dwThrdId;
-    CHAR chBuf[48];
+    CHAR chBuf[64];
     DWORD read;
     DWORD written;
     CHAR c;
@@ -388,10 +388,10 @@ clear:
 
     FlushConsoleInputBuffer(hConsoleInput);
 
-    ZeroMemory(chBuf, 48);
+    ZeroMemory(chBuf, 64);
     for (current_gcode_lines = 0, cursPos.Y = 13, cursPos.X = 4 + sizeof(USER_INFO_STRING4) - 1;;) {
-        memset(chBuf, ' ', 47);
-        while (!ReadFile(hNamedPipe, chBuf, 47, &read, NULL));
+        memset(chBuf, ' ', 63);
+        while (!ReadFile(hNamedPipe, chBuf, 63, &read, NULL));
 
         if (*chBuf == '-' && strncmp(chBuf, "-EOT-", 5) == 0) {
             coordPBar.X = pbar.xCurrent++;
@@ -429,7 +429,7 @@ clear:
         WriteFile(hNamedPipe, "-", 1, &written, NULL);
         SetConsoleCursorPosition(hConsStdOut, cursPos);
         *(chBuf + --read) = ' ';
-        WriteConsole(hConsStdOut, chBuf, 47, &written, NULL);
+        WriteConsole(hConsStdOut, chBuf, 63, &written, NULL);
     }
 
 
