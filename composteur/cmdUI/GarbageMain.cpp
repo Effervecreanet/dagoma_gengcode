@@ -262,7 +262,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
   HWND consoleWindow;
 
   AllocConsole();
-  SetConsoleTitleA("Effervecreanet | Magis");
+  SetConsoleTitleA("Effervecreanet | Sigma");
   SetConsoleCP(28591);
   SetConsoleOutputCP(28591);
 
