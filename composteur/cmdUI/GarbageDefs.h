@@ -7,7 +7,7 @@
 
 #define USER_INFO_STRING3 "Objet 3d:         composteur"
 
-#define USER_INFO_STRING9 "Version:          1.0.5 - 10/03/2022"
+#define USER_INFO_STRING9 "Version:          1.0.7 - 26/10/2025"
 
 #define USER_INFO_STRING1 "Effervecreanet - Impression 3d magis dagoma"
 #define USER_INFO_STRING2                                                      \
@@ -28,7 +28,7 @@
 
 #define USER_INFO_STRING3 "3d object:        garbage collector"
 
-#define USER_INFO_STRING9 "Version:          1.0.6 - 10/03/2022"
+#define USER_INFO_STRING9 "Version:          1.0.7 - 26/10/2025"
 
 #define USER_INFO_STRING1 "Effervecreanet - 3d magis dagoma printing"
 #define USER_INFO_STRING2                                                      \

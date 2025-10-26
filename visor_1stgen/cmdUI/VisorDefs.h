@@ -8,7 +8,7 @@
 
 #define USER_INFO_STRING3 "Objet 3d:         visière"
 
-#define USER_INFO_STRING9 "Version:          1.0.7 - 10/03/2022"
+#define USER_INFO_STRING9 "Version:          1.0.9 - 26/10/2025"
 
 #define USER_INFO_STRING1  "Effervecreanet - Impression 3d magis dagoma"
 #define USER_INFO_STRING2  "Entrez valeur calibrage plateau (valeur comprise entre -40.000 et 200.000):"
@@ -23,7 +23,7 @@
 
 #define USER_INFO_STRING3 "3d object:        visor"
 
-#define USER_INFO_STRING9 "Version:          1.0.8 - 10/03/2022"
+#define USER_INFO_STRING9 "Version:          1.0.9 - 26/10/2025"
 
 #define USER_INFO_STRING1 "Effervecreanet - 3d magis dagoma printing"
 #define USER_INFO_STRING2 "Enter calibrating point (number between -40.000 and 200.000):"
