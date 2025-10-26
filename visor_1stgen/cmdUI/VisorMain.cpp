@@ -245,7 +245,7 @@ static int get_user_input(HANDLE consOut, HANDLE consInp, COORD cursPos,
   return 1;
 }
 
-int main(int argc, char **argv) {
+int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLine, int nCmdShow) {
   HANDLE hNamedPipe;
   HANDLE hThrdObj3d;
   HANDLE hFile;
@@ -262,7 +262,8 @@ int main(int argc, char **argv) {
   HANDLE hConsoleInput;
   HWND consoleWindow;
 
-  SetConsoleTitleA("Effervecreanet | Magis");
+	AllocConsole();
+  SetConsoleTitleA("Effervecreanet | Sigma");
   SetConsoleCP(28591);
   SetConsoleOutputCP(28591);
 
