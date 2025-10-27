@@ -22,113 +22,119 @@ float Z_START = 0.0;
 static void stamp(void);
 static void genGCODE(void);
 
-static void help(char *progname) {
-  printf("usage: %s [Z_START] [HEAT_TEMP] [PRINT_SPEED]\n\n", progname);
-  printf(
-      "      Where Z_START is a value where the printer head starts\n"
-      "      to print, it is the 3D Object first layer or first level.\n"
-      "      This value is a floating-point number which can have up to\n"
-      "      three digits before and after the decimal dot.\n"
-      "      Typical use is to redirect output to dagoma0.g\n\n"
-      "      And where HEAT_TEMP is the burning temperature. Whereas\n"
-      "      225 deg is strongly encouraged 247 deg may also work. Argument\n"
-      "      should be specified as a number between 200 and 250.\n\n"
-      "      PRINT_SPEED is the printing speed. It relates to the\n"
-      "      whole piece. It should be specified as a number comprised\n"
-      "      between 90 and 600. %s advice 150.\n\n",
-      progname);
-  return;
+static void help(char* progname) {
+	printf("usage: %s [Z_START] [HEAT_TEMP] [PRINT_SPEED]\n\n", progname);
+	printf(
+		"      Where Z_START is a value where the printer head starts\n"
+		"      to print, it is the 3D Object first layer or first level.\n"
+		"      This value is a floating-point number which can have up to\n"
+		"      three digits before and after the decimal dot.\n"
+		"      Typical use is to redirect output to dagoma0.g\n\n"
+		"      And where HEAT_TEMP is the burning temperature. Whereas\n"
+		"      225 deg is strongly encouraged 247 deg may also work. Argument\n"
+		"      should be specified as a number between 200 and 250.\n\n"
+		"      PRINT_SPEED is the printing speed. It relates to the\n"
+		"      whole piece. It should be specified as a number comprised\n"
+		"      between 90 and 600. %s advice 150.\n\n",
+		progname);
+	return;
 }
 
-static int parse_user_input1(char *usr_input, float *usrZ_START) {
-  char *p_usrinp1;
-  bool dotfound = false;
-  bool minfound = false;
+static int parse_user_input1(char* usr_input, float* usrZ_START) {
+	char* p_usrinp1;
+	bool dotfound = false;
+	bool minfound = false;
 
-  if (strlen(usr_input) > USER_INPUT_MAXLEN)
-    return -1;
+	if (strlen(usr_input) > USER_INPUT_MAXLEN)
+		return -1;
 
-  p_usrinp1 = usr_input;
-  while (*p_usrinp1) {
-    if (isdigit(*p_usrinp1) == 0) {
-      if (!minfound && *p_usrinp1 == '-') {
-        minfound = true;
-        if (*++p_usrinp1 == '\0')
-          return -1;
-      } else if (dotfound) {
-        return -1;
-      } else if (*p_usrinp1 != '.') {
-        return -1;
-      } else if (p_usrinp1 == usr_input) {
-        return -1;
-      } else {
-        dotfound = true;
-        p_usrinp1++;
-      }
-    } else {
-      p_usrinp1++;
-    }
-  }
+	p_usrinp1 = usr_input;
+	while (*p_usrinp1) {
+		if (isdigit(*p_usrinp1) == 0) {
+			if (!minfound && *p_usrinp1 == '-') {
+				minfound = true;
+				if (*++p_usrinp1 == '\0')
+					return -1;
+			}
+			else if (dotfound) {
+				return -1;
+			}
+			else if (*p_usrinp1 != '.') {
+				return -1;
+			}
+			else if (p_usrinp1 == usr_input) {
+				return -1;
+			}
+			else {
+				dotfound = true;
+				p_usrinp1++;
+			}
+		}
+		else {
+			p_usrinp1++;
+		}
+	}
 
-  if (*p_usrinp1 != '\0')
-    return -1;
+	if (*p_usrinp1 != '\0')
+		return -1;
 
-  memset(usrZ_START, 0, sizeof(float));
-  *usrZ_START = (float)atof(usr_input);
+	memset(usrZ_START, 0, sizeof(float));
+	*usrZ_START = (float)atof(usr_input);
 
-  return 0;
+	return 0;
 }
 
-static int parse_user_input2(char *usr_input, unsigned short *heat_temp) {
-  char *p;
+static int parse_user_input2(char* usr_input, unsigned short* heat_temp) {
+	char* p;
 
-  p = usr_input;
-  do {
-    if (isdigit(*p) == 0)
-      return -1;
-  } while (*++p != '\0');
+	p = usr_input;
+	do {
+		if (isdigit(*p) == 0)
+			return -1;
+	} while (*++p != '\0');
 
-  *heat_temp = (unsigned short)atoi(usr_input);
-  if (*heat_temp < 200 || *heat_temp > 560)
-    return -1;
+	*heat_temp = (unsigned short)atoi(usr_input);
+	if (*heat_temp < 200 || *heat_temp > 560)
+		return -1;
 
-  return 0;
+	return 0;
 }
 
-static int parse_user_input3(char *usr_input) {
-  char *p;
+static int parse_user_input3(char* usr_input) {
+	char* p;
 
-  p = usr_input;
-  do {
-    if (isdigit(*p) == 0)
-      return -1;
-  } while (*++p != '\0');
+	p = usr_input;
+	do {
+		if (isdigit(*p) == 0)
+			return -1;
+	} while (*++p != '\0');
 
-  memset(&F_WHOLE, 0, sizeof(unsigned short));
+	memset(&F_WHOLE, 0, sizeof(unsigned short));
 
-  F_WHOLE = (unsigned short)atoi(usr_input);
-  if (F_WHOLE < 90 || F_WHOLE > 600)
-    return -1;
+	F_WHOLE = (unsigned short)atoi(usr_input);
+	if (F_WHOLE < 90 || F_WHOLE > 600)
+		return -1;
 
-  return 0;
+	return 0;
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
 
-  if (argc != 4) {
-    help(argv[0]);
-    return 1;
-  } else if (parse_user_input1(argv[1], &Z_START) != 0 ||
-             parse_user_input2(argv[2], &heat_temp) != 0 ||
-             parse_user_input3(argv[3]) != 0) {
-    printf("Bad user input\n");
-    return 2;
-  }
+	if (argc != 4) {
+		help(argv[0]);
+		return 1;
+	}
+	else if (parse_user_input1(argv[1], &Z_START) != 0 ||
+		parse_user_input2(argv[2], &heat_temp) != 0 ||
+		parse_user_input3(argv[3]) != 0) {
+		printf("Bad user input\n");
+		return 2;
+	}
 
-  stamp();
-  genGCODE();
+	stamp();
+	genGCODE();
 
-  return 0;
+	return 0;
 }
 
 #define STEP_X 0.100
@@ -243,32 +249,32 @@ void Branch::Return2(void) {
 }
 
 static void heat0deg(void) {
-  /* Down heat to 0 deg */
-  fprintf(stdout, "M106 S0\n");
-  fprintf(stdout, "M109 S0\n");
-  fprintf(stdout, "G92 E0.0\n");
+	/* Down heat to 0 deg */
+	fprintf(stdout, "M106 S0\n");
+	fprintf(stdout, "M109 S0\n");
+	fprintf(stdout, "G92 E0.0\n");
 
-  /* Return to origin position, auto home */
-  fprintf(stdout, "G28\n");
+	/* Return to origin position, auto home */
+	fprintf(stdout, "G28\n");
 
-  return;
+	return;
 }
 
 static void stamp(void)
 {
-  struct tm *tmv;
-  time_t timet;
-  char buff[128];
+	struct tm* tmv;
+	time_t timet;
+	char buff[128];
 
-  fprintf(stdout, "; Generated at ");
-  time(&timet);
-  tmv = localtime(&timet);
-  memset(buff, 0, 128);
-  strftime(buff, 128,"%a %b %e %H:%M:%S %Y", tmv);
-  fprintf(stdout, "%s\n", buff);
-  fprintf(stdout, "; Author: Franck Lesage (effervecreanet@orange.fr) http://www.effervecrea.net\n");
+	fprintf(stdout, "; Generated at ");
+	time(&timet);
+	tmv = localtime(&timet);
+	memset(buff, 0, 128);
+	strftime(buff, 128, "%a %b %e %H:%M:%S %Y", tmv);
+	fprintf(stdout, "%s\n", buff);
+	fprintf(stdout, "; Author: Franck Lesage (effervecreanet@orange.fr) http://www.effervecrea.net\n");
 
-  return;
+	return;
 }
 
 void genGCODE(void) {
@@ -292,268 +298,268 @@ void genGCODE(void) {
 
 	Z += STEP_Z;
 	fprintf(stdout, "G1 Z%.3f\n", Z);
-	
+
 
 	Z += STEP_Z;
 	fprintf(stdout, "G1 Z%.3f\n", Z);
-	
+
 
 	BaseLeft2Right.Return2();
 
 	Z += STEP_Z;
 	fprintf(stdout, "G1 Z%.3f\n", Z);
-	
+
 
 	Z += STEP_Z;
 	fprintf(stdout, "G1 Z%.3f\n", Z);
-	
+
 
 	BaseLeft2Right.Go2();
 
 	Z += STEP_Z;
 	fprintf(stdout, "G1 Z%.3f\n", Z);
-	
+
 
 	Z += STEP_Z;
 	fprintf(stdout, "G1 Z%.3f\n", Z);
-	
+
 
 	BaseLeft2Right.Return2();
 
 	Z -= STEP_Z;
 	fprintf(stdout, "G1 Z%.3f\n", Z);
-	
+
 
 	Z -= STEP_Z;
 	fprintf(stdout, "G1 Z%.3f\n", Z);
-	
+
 
 	Z -= STEP_Z;
 	fprintf(stdout, "G1 Z%.3f\n", Z);
-	
+
 
 	Z -= STEP_Z;
 	fprintf(stdout, "G1 Z%.3f\n", Z);
-	
+
 
 	Z -= STEP_Z;
 	fprintf(stdout, "G1 Z%.3f\n", Z);
-	
+
 
 	Z -= STEP_Z;
 	fprintf(stdout, "G1 Z%.3f\n", Z);
-	
+
 
 	fprintf(stdout, "G1 Y%.3f\n", Y_START - 0.80 * 1);
-	
+
 
 	BaseLeft2Right.Go2();
 
 	Z += STEP_Z;
 	fprintf(stdout, "G1 Z%.3f\n", Z);
-	
+
 
 	Z += STEP_Z;
 	fprintf(stdout, "G1 Z%.3f\n", Z);
-	
+
 
 	BaseLeft2Right.Return2();
 
 	Z += STEP_Z;
 	fprintf(stdout, "G1 Z%.3f\n", Z);
-	
+
 
 	Z += STEP_Z;
 	fprintf(stdout, "G1 Z%.3f\n", Z);
-	
+
 
 	BaseLeft2Right.Go2();
 
 	Z += STEP_Z;
 	fprintf(stdout, "G1 Z%.3f\n", Z);
-	
+
 
 	Z += STEP_Z;
 	fprintf(stdout, "G1 Z%.3f\n", Z);
-	
+
 
 	BaseLeft2Right.Return2();
 
 	Z -= STEP_Z;
 	fprintf(stdout, "G1 Z%.3f\n", Z);
-	
+
 
 	Z -= STEP_Z;
 	fprintf(stdout, "G1 Z%.3f\n", Z);
-	
+
 
 	Z -= STEP_Z;
 	fprintf(stdout, "G1 Z%.3f\n", Z);
-	
+
 
 	Z -= STEP_Z;
 	fprintf(stdout, "G1 Z%.3f\n", Z);
-	
+
 
 	Z -= STEP_Z;
 	fprintf(stdout, "G1 Z%.3f\n", Z);
-	
+
 
 	Z -= STEP_Z;
 	fprintf(stdout, "G1 Z%.3f\n", Z);
-	
+
 
 	fprintf(stdout, "G1 Y%.3f\n", Y_START - 0.80 * 2);
-	
+
 	// ##
 
 	BaseLeft2Right.Go2();
 
 	Z += STEP_Z;
 	fprintf(stdout, "G1 Z%.3f\n", Z);
-	
+
 
 	Z += STEP_Z;
 	fprintf(stdout, "G1 Z%.3f\n", Z);
-	
+
 
 	BaseLeft2Right.Return2();
 
 	Z += STEP_Z;
 	fprintf(stdout, "G1 Z%.3f\n", Z);
-	
+
 
 	Z += STEP_Z;
 	fprintf(stdout, "G1 Z%.3f\n", Z);
-	
+
 
 	BaseLeft2Right.Go2();
 
 	Z += STEP_Z;
 	fprintf(stdout, "G1 Z%.3f\n", Z);
-	
+
 
 	Z += STEP_Z;
 	fprintf(stdout, "G1 Z%.3f\n", Z);
-	
+
 
 	BaseLeft2Right.Return2();
 
 	Z -= STEP_Z;
 	fprintf(stdout, "G1 Z%.3f\n", Z);
-	
+
 
 	Z -= STEP_Z;
 	fprintf(stdout, "G1 Z%.3f\n", Z);
-	
+
 
 	Z -= STEP_Z;
 	fprintf(stdout, "G1 Z%.3f\n", Z);
-	
+
 
 	Z -= STEP_Z;
 	fprintf(stdout, "G1 Z%.3f\n", Z);
-	
+
 
 	Z -= STEP_Z;
 	fprintf(stdout, "G1 Z%.3f\n", Z);
-	
+
 
 	Z -= STEP_Z;
 	fprintf(stdout, "G1 Z%.3f\n", Z);
-	
+
 
 	fprintf(stdout, "G1 Y%.3f\n", Y_START - 0.80 * 3);
-	
+
 
 	BaseLeft2Right.Go2();
 
 	Z += STEP_Z;
 	fprintf(stdout, "G1 Z%.3f\n", Z);
-	
+
 
 	Z += STEP_Z;
 	fprintf(stdout, "G1 Z%.3f\n", Z);
-	
+
 
 	BaseLeft2Right.Return2();
 
 	Z += STEP_Z;
 	fprintf(stdout, "G1 Z%.3f\n", Z);
-	
+
 
 	Z += STEP_Z;
 	fprintf(stdout, "G1 Z%.3f\n", Z);
-	
+
 
 	BaseLeft2Right.Go2();
 
 	Z += STEP_Z;
 	fprintf(stdout, "G1 Z%.3f\n", Z);
-	
+
 
 	Z += STEP_Z;
 	fprintf(stdout, "G1 Z%.3f\n", Z);
-	
+
 
 	BaseLeft2Right.Return2();
 
 	Z -= STEP_Z;
 	fprintf(stdout, "G1 Z%.3f\n", Z);
-	
+
 
 	Z -= STEP_Z;
 	fprintf(stdout, "G1 Z%.3f\n", Z);
-	
+
 
 	Z -= STEP_Z;
 	fprintf(stdout, "G1 Z%.3f\n", Z);
-	
+
 
 	Z -= STEP_Z;
 	fprintf(stdout, "G1 Z%.3f\n", Z);
-	
+
 
 	Z -= STEP_Z;
 	fprintf(stdout, "G1 Z%.3f\n", Z);
-	
+
 
 	Z -= STEP_Z;
 	fprintf(stdout, "G1 Z%.3f\n", Z);
-	
+
 
 	fprintf(stdout, "G1 Y%.3f\n", Y_START - 0.80 * 4);
-	
+
 
 	BaseLeft2Right.Go2();
 
 	Z += STEP_Z;
 	fprintf(stdout, "G1 Z%.3f\n", Z);
-	
+
 
 	Z += STEP_Z;
 	fprintf(stdout, "G1 Z%.3f\n", Z);
-	
+
 
 	BaseLeft2Right.Return2();
 
 	Z += STEP_Z;
 	fprintf(stdout, "G1 Z%.3f\n", Z);
-	
+
 
 	Z += STEP_Z;
 	fprintf(stdout, "G1 Z%.3f\n", Z);
-	
+
 
 	BaseLeft2Right.Go2();
 
 	Z += STEP_Z;
 	fprintf(stdout, "G1 Z%.3f\n", Z);
-	
+
 
 	Z += STEP_Z;
 	fprintf(stdout, "G1 Z%.3f\n", Z);
-	
+
 
 	BaseLeft2Right.Return2();
 
@@ -569,11 +575,11 @@ void genGCODE(void) {
 		if (layer < LAYER_BRANCH) {
 			/* Left branch go */
 
-			while(Y > Y_END) {
+			while (Y > Y_END) {
 				EXTRUDE1(E);
-				
+
 				fprintf(stdout, "G1 F%hu Y%.3f\n", F_WHOLE, Y);
-				
+
 				Y -= STEP_Y;
 			}
 		}
@@ -583,13 +589,13 @@ void genGCODE(void) {
 		do {
 			EXTRUDE(E);
 
-            
+
 			fprintf(stdout, "G1 F%hu X%.3f\n", F_WHOLE, X);
-			
+
 			X += STEP_X;
-			
+
 			fprintf(stdout, "G1 F%hu Y%.3f\n", F_WHOLE, Y);
-			
+
 			Y -= STEP_Y;
 
 		} while (X < 0.000);
@@ -599,13 +605,13 @@ void genGCODE(void) {
 		do {
 			EXTRUDE(E);
 
-            
+
 			fprintf(stdout, "G1 F%hu X%.3f\n", F_WHOLE, X);
-			
+
 			X += STEP_X;
-			
+
 			fprintf(stdout, "G1 F%hu Y%.3f\n", F_WHOLE, Y);
-			
+
 			Y += STEP_Y;
 
 		} while (X < 70.000);
@@ -614,24 +620,24 @@ void genGCODE(void) {
 
 		if (layer > 0) {
 			Z += STEP_Z;
-			
+
 			fprintf(stdout, "G1 F%hu Z%.3f\n", F_WHOLE, Z);
-			
+
 
 			Z += STEP_Z;
-			
+
 			fprintf(stdout, "G1 F%hu Z%.3f\n", F_WHOLE, Z);
-			
+
 
 			Z += STEP_Z;
-			
+
 			fprintf(stdout, "G1 F%hu Z%.3f\n", F_WHOLE, Z);
-			
+
 
 			Z += STEP_Z / 2;
-			
+
 			fprintf(stdout, "G1 F%hu Z%.3f\n", F_WHOLE, Z);
-			
+
 		}
 
 
@@ -640,21 +646,21 @@ void genGCODE(void) {
 		if (layer < LAYER_BRANCH) {
 			/* Right branch go */
 
-			while(Y < Y_START) {
+			while (Y < Y_START) {
 				EXTRUDE1(E);
-				
+
 				fprintf(stdout, "G1 F%hu Y%.3f\n", F_WHOLE, Y);
-				
+
 				Y += STEP_Y;
 			}
 
 			/* Right branch return */
 
-			while(Y > Y_END) {
+			while (Y > Y_END) {
 				EXTRUDE1(E);
-				
+
 				fprintf(stdout, "G1 F%hu Y%.3f\n", F_WHOLE, Y);
-				
+
 				Y -= STEP_Y;
 			}
 		}
@@ -665,67 +671,67 @@ void genGCODE(void) {
 
 		do {
 			EXTRUDE(E);
-            
+
 			fprintf(stdout, "G1 F%hu X%.3f\n", F_WHOLE, X);
-			
+
 			X -= STEP_X;
-			
+
 			fprintf(stdout, "G1 F%hu Y%.3f\n", F_WHOLE, Y);
-			
+
 			Y -= STEP_Y;
 
 		} while (X > 0.000);
 
 		/* Triangle left side */
-		
+
 		do {
 			EXTRUDE(E);
-            
+
 			fprintf(stdout, "G1 F%hu X%.3f\n", F_WHOLE, X);
-			
+
 			X -= STEP_X;
-			
+
 			fprintf(stdout, "G1 F%hu Y%.3f\n", F_WHOLE, Y);
-			
+
 			Y += STEP_Y;
 
-		} while (X > -70.000);	
+		} while (X > -70.000);
 
 		layer++;
 
 		if (layer < LAYER_BRANCH) {
 			/* Left branch return */
 
-			while(Y < Y_START) {
+			while (Y < Y_START) {
 				EXTRUDE1(E);
-				
+
 				fprintf(stdout, "G1 F%hu Y%.3f\n", F_WHOLE, Y);
-				
+
 				Y += STEP_Y;
 			}
 		}
-			
+
 		/* level up */
 
 		Z += STEP_Z;
-		
+
 		fprintf(stdout, "G1 F%hu Z%.3f\n", F_WHOLE, Z);
-		
+
 
 		Z += STEP_Z;
-		
+
 		fprintf(stdout, "G1 F%hu Z%.3f\n", F_WHOLE, Z);
-		
+
 
 		Z += STEP_Z;
-		
+
 		fprintf(stdout, "G1 F%hu Z%.3f\n", F_WHOLE, Z);
-				
+
 
 		Z += STEP_Z / 2;
-		
+
 		fprintf(stdout, "G1 F%hu Z%.3f\n", F_WHOLE, Z);
-				
+
 	}
 
 	heat0deg();

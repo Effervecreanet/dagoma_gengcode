@@ -20,112 +20,118 @@ float Z_START = 0.0;
 static void stamp(void);
 static void genGCODE(void);
 
-static void help(char *progname) {
-  printf("usage: %s [Z_START] [HEAT_TEMP] [PRINT_SPEED]\n\n", progname);
-  printf(
-      "      Where Z_START is a value where the printer head starts\n"
-      "      to print, it is the 3D Object first layer or first level.\n"
-      "      This value is a floating-point number which can have up to\n"
-      "      three digits before and after the decimal dot.\n"
-      "      Typical use is to redirect output to dagoma0.g\n\n"
-      "      And where HEAT_TEMP is the burning temperature. Whereas\n"
-      "      225 deg is strongly encouraged 247 deg may also work. Argument\n"
-      "      should be specified as a number between 200 and 250.\n\n"
-      "      PRINT_SPEED is the printing speed. It relates to the\n"
-      "      whole piece. It should be specified as a number comprised\n"
-      "      between 90 and 600. %s advice 150.\n\n",
-      progname);
-  return;
+static void help(char* progname) {
+	printf("usage: %s [Z_START] [HEAT_TEMP] [PRINT_SPEED]\n\n", progname);
+	printf(
+		"      Where Z_START is a value where the printer head starts\n"
+		"      to print, it is the 3D Object first layer or first level.\n"
+		"      This value is a floating-point number which can have up to\n"
+		"      three digits before and after the decimal dot.\n"
+		"      Typical use is to redirect output to dagoma0.g\n\n"
+		"      And where HEAT_TEMP is the burning temperature. Whereas\n"
+		"      225 deg is strongly encouraged 247 deg may also work. Argument\n"
+		"      should be specified as a number between 200 and 250.\n\n"
+		"      PRINT_SPEED is the printing speed. It relates to the\n"
+		"      whole piece. It should be specified as a number comprised\n"
+		"      between 90 and 600. %s advice 150.\n\n",
+		progname);
+	return;
 }
 
-static int parse_user_input1(char *usr_input, float *usrZ_START) {
-  char *p_usrinp1;
-  bool dotfound = false;
-  bool minfound = false;
+static int parse_user_input1(char* usr_input, float* usrZ_START) {
+	char* p_usrinp1;
+	bool dotfound = false;
+	bool minfound = false;
 
-  if (strlen(usr_input) > USER_INPUT_MAXLEN)
-    return -1;
+	if (strlen(usr_input) > USER_INPUT_MAXLEN)
+		return -1;
 
-  p_usrinp1 = usr_input;
-  while (*p_usrinp1) {
-    if (isdigit(*p_usrinp1) == 0) {
-      if (!minfound && *p_usrinp1 == '-') {
-        minfound = true;
-        if (*++p_usrinp1 == '\0')
-          return -1;
-      } else if (dotfound) {
-        return -1;
-      } else if (*p_usrinp1 != '.') {
-        return -1;
-      } else if (p_usrinp1 == usr_input) {
-        return -1;
-      } else {
-        dotfound = true;
-        p_usrinp1++;
-      }
-    } else {
-      p_usrinp1++;
-    }
-  }
+	p_usrinp1 = usr_input;
+	while (*p_usrinp1) {
+		if (isdigit(*p_usrinp1) == 0) {
+			if (!minfound && *p_usrinp1 == '-') {
+				minfound = true;
+				if (*++p_usrinp1 == '\0')
+					return -1;
+			}
+			else if (dotfound) {
+				return -1;
+			}
+			else if (*p_usrinp1 != '.') {
+				return -1;
+			}
+			else if (p_usrinp1 == usr_input) {
+				return -1;
+			}
+			else {
+				dotfound = true;
+				p_usrinp1++;
+			}
+		}
+		else {
+			p_usrinp1++;
+		}
+	}
 
-  if (*p_usrinp1 != '\0')
-    return -1;
+	if (*p_usrinp1 != '\0')
+		return -1;
 
-  memset(usrZ_START, 0, sizeof(float));
-  *usrZ_START = (float)atof(usr_input);
+	memset(usrZ_START, 0, sizeof(float));
+	*usrZ_START = (float)atof(usr_input);
 
-  return 0;
+	return 0;
 }
 
-static int parse_user_input2(char *usr_input, unsigned short *heat_temp) {
-  char *p;
+static int parse_user_input2(char* usr_input, unsigned short* heat_temp) {
+	char* p;
 
-  p = usr_input;
-  do {
-    if (isdigit(*p) == 0)
-      return -1;
-  } while (*++p != '\0');
+	p = usr_input;
+	do {
+		if (isdigit(*p) == 0)
+			return -1;
+	} while (*++p != '\0');
 
-  *heat_temp = (unsigned short)atoi(usr_input);
-  if (*heat_temp < 200 || *heat_temp > 560)
-    return -1;
+	*heat_temp = (unsigned short)atoi(usr_input);
+	if (*heat_temp < 200 || *heat_temp > 560)
+		return -1;
 
-  return 0;
+	return 0;
 }
 
-static int parse_user_input3(char *usr_input) {
-  char *p;
+static int parse_user_input3(char* usr_input) {
+	char* p;
 
-  p = usr_input;
-  do {
-    if (isdigit(*p) == 0)
-      return -1;
-  } while (*++p != '\0');
+	p = usr_input;
+	do {
+		if (isdigit(*p) == 0)
+			return -1;
+	} while (*++p != '\0');
 
-  memset(&F_WHOLE, 0, sizeof(unsigned short));
+	memset(&F_WHOLE, 0, sizeof(unsigned short));
 
-  F_WHOLE = (unsigned short)atoi(usr_input);
-  if (F_WHOLE < 90 || F_WHOLE > 600)
-    return -1;
+	F_WHOLE = (unsigned short)atoi(usr_input);
+	if (F_WHOLE < 90 || F_WHOLE > 600)
+		return -1;
 
-  return 0;
+	return 0;
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
 
-  if (argc != 4) {
-    help(argv[0]);
-    return 1;
-  } else if (parse_user_input1(argv[1], &Z_START) != 0 ||
-             parse_user_input2(argv[2], &heat_temp) != 0 ||
-             parse_user_input3(argv[3]) != 0) {
-    printf("Bad user input\n");
-    return 2;
-  }
+	if (argc != 4) {
+		help(argv[0]);
+		return 1;
+	}
+	else if (parse_user_input1(argv[1], &Z_START) != 0 ||
+		parse_user_input2(argv[2], &heat_temp) != 0 ||
+		parse_user_input3(argv[3]) != 0) {
+		printf("Bad user input\n");
+		return 2;
+	}
 
-  genGCODE();
+	genGCODE();
 
-  return 0;
+	return 0;
 }
 
 #define Z_STEP 0.10
@@ -152,1203 +158,1205 @@ static float E = 0.000, Z = 0.000, Y = 0.000, X = 0.000;
   } while (0)
 
 static void heat0deg(void) {
-  /* Down heat to 0 deg */
-  fprintf(stdout, "M106 S0\n");
-  fprintf(stdout, "M109 S0\n");
-  fprintf(stdout, "G92 E0.0\n");
+	/* Down heat to 0 deg */
+	fprintf(stdout, "M106 S0\n");
+	fprintf(stdout, "M109 S0\n");
+	fprintf(stdout, "G92 E0.0\n");
 
-  /* Return to origin position, auto home */
-  fprintf(stdout, "G28\n");
+	/* Return to origin position, auto home */
+	fprintf(stdout, "G28\n");
 
-  return;
+	return;
 }
 
 static void stamp(void)
 {
-  struct tm *tmv;
-  time_t timet;
-  char buff[128];
+	struct tm* tmv;
+	time_t timet;
+	char buff[128];
 
-  fprintf(stdout, "; Generated at ");
-  time(&timet);
-  tmv = localtime(&timet);
-  memset(buff, 0, 128);
-  strftime(buff, 128,"%a %b %e %H:%M:%S %Y", tmv);
-  fprintf(stdout, "%s\n", buff);
-  fprintf(stdout, "; Author: Franck Lesage (effervecreanet@orange.fr) http://www.effervecrea.net\n");
+	fprintf(stdout, "; Generated at ");
+	time(&timet);
+	tmv = localtime(&timet);
+	memset(buff, 0, 128);
+	strftime(buff, 128, "%a %b %e %H:%M:%S %Y", tmv);
+	fprintf(stdout, "%s\n", buff);
+	fprintf(stdout, "; Author: Franck Lesage (effervecreanet@orange.fr) http://www.effervecrea.net\n");
 
-  return;
+	return;
 }
 
 static void init_marlin(void) {
 
-  fprintf(stdout, "G90\n");
-  fprintf(stdout, "G1 F%hu Z%.3f\n", F_WHOLE, Z_START);
-  fprintf(stdout, "M106 S%hu\n", heat_temp);
-  fprintf(stdout, "M109 S%hu\n", heat_temp);
+	fprintf(stdout, "G90\n");
+	fprintf(stdout, "G1 F%hu Z%.3f\n", F_WHOLE, Z_START);
+	fprintf(stdout, "M106 S%hu\n", heat_temp);
+	fprintf(stdout, "M109 S%hu\n", heat_temp);
 
-  return;
+	return;
 }
 
 class Branch : public std::list<float> {
 private:
-  void pOut(float y, bool noextrude) {
-    char buffer[255];
+	void pOut(float y, bool noextrude) {
+		char buffer[255];
 
-    if (noextrude) {
-      fprintf(stdout, "G1 F%hu Y%.3f\n", F_WHOLE, y);
-    } else {
-      E += STEP_E1;
-      fprintf(stdout, "G1 F%hu E%.3f Y%.3f\n", F_WHOLE, E, y);
-    }
-    // printf("G1 F%hu Y%.3f\n", y);
+		if (noextrude) {
+			fprintf(stdout, "G1 F%hu Y%.3f\n", F_WHOLE, y);
+		}
+		else {
+			E += STEP_E1;
+			fprintf(stdout, "G1 F%hu E%.3f Y%.3f\n", F_WHOLE, E, y);
+		}
+		// printf("G1 F%hu Y%.3f\n", y);
 
-    return;
-  }
-  void pOut2(float y, bool noextrude) {
-    char buffer[255];
+		return;
+	}
+	void pOut2(float y, bool noextrude) {
+		char buffer[255];
 
-    if (noextrude == true) {
-      fprintf(stdout, "G1 F%hu X%.3f\n", F_WHOLE,
-              (y < 0.009 && y > -0.001) ? 0.0 : y);
-    } else {
-      E += STEP_E1;
-      fprintf(stdout, "G1 F%hu E%.3f X%.3f\n", F_WHOLE, E,
-              (y < 0.009 && y > -0.001) ? 0.0 : y);
-    }
-    // printf("G1 F%hu Y%.3f\n", y);
+		if (noextrude == true) {
+			fprintf(stdout, "G1 F%hu X%.3f\n", F_WHOLE,
+				(y < 0.009 && y > -0.001) ? 0.0 : y);
+		}
+		else {
+			E += STEP_E1;
+			fprintf(stdout, "G1 F%hu E%.3f X%.3f\n", F_WHOLE, E,
+				(y < 0.009 && y > -0.001) ? 0.0 : y);
+		}
+		// printf("G1 F%hu Y%.3f\n", y);
 
-    return;
-  }
+		return;
+	}
 
 public:
-  void New(float ystart, float yend);
-  void New2(float ystart, float yend);
-  void Go(bool noextrude = false);
-  void Return(void);
-  void Go2(bool noextrude = false);
-  void Return2(void);
+	void New(float ystart, float yend);
+	void New2(float ystart, float yend);
+	void Go(bool noextrude = false);
+	void Return(void);
+	void Go2(bool noextrude = false);
+	void Return2(void);
 };
 
 void Branch::New(float ystart, float yend) {
-  float Y;
+	float Y;
 
-  for (Y = ystart; Y > yend; Y -= Y_STEP)
-    this->push_back(Y);
+	for (Y = ystart; Y > yend; Y -= Y_STEP)
+		this->push_back(Y);
 
-  return;
+	return;
 }
 
 void Branch::New2(float ystart, float yend) {
-  float Y;
+	float Y;
 
-  for (Y = ystart; Y < yend; Y += Y_STEP)
-    this->push_back(Y);
+	for (Y = ystart; Y < yend; Y += Y_STEP)
+		this->push_back(Y);
 
-  return;
+	return;
 }
 void Branch::Go(bool noextrude) {
-  for (std::list<float>::iterator it = this->begin(); it != this->end(); ++it)
-    this->pOut(*it, noextrude);
+	for (std::list<float>::iterator it = this->begin(); it != this->end(); ++it)
+		this->pOut(*it, noextrude);
 
-  return;
+	return;
 }
 
 void Branch::Go2(bool noextrude) {
-  for (std::list<float>::iterator it = this->begin(); it != this->end(); ++it)
-    this->pOut2(*it, noextrude);
+	for (std::list<float>::iterator it = this->begin(); it != this->end(); ++it)
+		this->pOut2(*it, noextrude);
 
-  return;
+	return;
 }
 
 void Branch::Return(void) {
-  this->reverse();
-  for (std::list<float>::iterator it = this->begin(); it != this->end(); ++it)
-    this->pOut(*it, false);
-  this->reverse();
+	this->reverse();
+	for (std::list<float>::iterator it = this->begin(); it != this->end(); ++it)
+		this->pOut(*it, false);
+	this->reverse();
 
-  return;
+	return;
 }
 void Branch::Return2(void) {
-  this->reverse();
-  for (std::list<float>::iterator it = this->begin(); it != this->end(); ++it)
-    this->pOut2(*it, false);
-  this->reverse();
+	this->reverse();
+	for (std::list<float>::iterator it = this->begin(); it != this->end(); ++it)
+		this->pOut2(*it, false);
+	this->reverse();
 
-  return;
+	return;
 }
 
 class headSide : public std::list<pair<float, float>> {
 private:
-  void pOut(float x, float y) {
-    char buffer[255];
+	void pOut(float x, float y) {
+		char buffer[255];
 
-    E += STEP_E2;
-    fprintf(stdout, "G1 F%hu E%.3f X%.3f Y%.3f\n", F_WHOLE, E, x, y);
-    // printf("G1 F%hu X%.3f Y%.3f\n", F_WHOLE, x, y);
+		E += STEP_E2;
+		fprintf(stdout, "G1 F%hu E%.3f X%.3f Y%.3f\n", F_WHOLE, E, x, y);
+		// printf("G1 F%hu X%.3f Y%.3f\n", F_WHOLE, x, y);
 
-    return;
-  }
+		return;
+	}
 
 public:
-  void New(std::pair<float, float> startXY, std::pair<float, float> endXY);
-  void New2(std::pair<float, float> startXY, std::pair<float, float> endXY);
-  void Go(void);
-  void Return(void);
-  void ShiftY(float pad);
+	void New(std::pair<float, float> startXY, std::pair<float, float> endXY);
+	void New2(std::pair<float, float> startXY, std::pair<float, float> endXY);
+	void Go(void);
+	void Return(void);
+	void ShiftY(float pad);
 };
 
 void headSide::New(std::pair<float, float> startXY,
-                   std::pair<float, float> endXY) {
-  float Y, X;
+	std::pair<float, float> endXY) {
+	float Y, X;
 
-  for (X = startXY.first, Y = startXY.second; X < endXY.first;
-       X += X_STEP, Y = Y + (endXY.first > 0 ? 0.032 : -0.032))
-    this->push_back(std::make_pair(X, Y));
+	for (X = startXY.first, Y = startXY.second; X < endXY.first;
+		X += X_STEP, Y = Y + (endXY.first > 0 ? 0.032 : -0.032))
+		this->push_back(std::make_pair(X, Y));
 
-  return;
+	return;
 }
 
 void headSide::New2(std::pair<float, float> startXY,
-                    std::pair<float, float> endXY) {
-  float Y, X;
+	std::pair<float, float> endXY) {
+	float Y, X;
 
-  for (X = startXY.first, Y = startXY.second; X > endXY.first;
-       X -= X_STEP, Y = Y + (endXY.first < 0 ? 0.032 : -0.032))
-    this->push_back(std::make_pair(X, Y));
+	for (X = startXY.first, Y = startXY.second; X > endXY.first;
+		X -= X_STEP, Y = Y + (endXY.first < 0 ? 0.032 : -0.032))
+		this->push_back(std::make_pair(X, Y));
 
-  return;
+	return;
 }
 
 void headSide::Go(void) {
-  for (std::list<pair<float, float>>::iterator it = this->begin();
-       it != this->end(); ++it)
-    this->pOut(it->first, it->second);
+	for (std::list<pair<float, float>>::iterator it = this->begin();
+		it != this->end(); ++it)
+		this->pOut(it->first, it->second);
 
-  return;
+	return;
 }
 
 void headSide::Return(void) {
-  this->reverse();
-  for (std::list<pair<float, float>>::iterator it = this->begin();
-       it != this->end(); ++it)
-    this->pOut(it->first, it->second);
-  this->reverse();
+	this->reverse();
+	for (std::list<pair<float, float>>::iterator it = this->begin();
+		it != this->end(); ++it)
+		this->pOut(it->first, it->second);
+	this->reverse();
 
-  return;
+	return;
 }
 
 void headSide::ShiftY(float pad) {
-  for (std::list<pair<float, float>>::iterator it = this->begin();
-       it != this->end(); ++it)
-    it->second += pad;
+	for (std::list<pair<float, float>>::iterator it = this->begin();
+		it != this->end(); ++it)
+		it->second += pad;
 
-  return;
+	return;
 }
 
 class Clips : public std::list<pair<float, float>> {
 private:
-  void pOut(float x, float y) {
-    char buffer[255];
+	void pOut(float x, float y) {
+		char buffer[255];
 
-    E += STEP_E2;
-    fprintf(stdout, "G1 F%hu E%.3f X%.3f Y%.3f\n", F_WHOLE, E, x, y);
-    // printf("G1 F%hu X%.3f Y%.3f\n", F_WHOLE, x, y);
+		E += STEP_E2;
+		fprintf(stdout, "G1 F%hu E%.3f X%.3f Y%.3f\n", F_WHOLE, E, x, y);
+		// printf("G1 F%hu X%.3f Y%.3f\n", F_WHOLE, x, y);
 
-    return;
-  }
+		return;
+	}
 
 public:
-  void New(std::pair<float, float> startXY, std::pair<float, float> endXY);
-  void Go(void);
-  void Return(void);
-  void ShiftX(float pad);
+	void New(std::pair<float, float> startXY, std::pair<float, float> endXY);
+	void Go(void);
+	void Return(void);
+	void ShiftX(float pad);
 };
 
 void Clips::New(std::pair<float, float> startXY,
-		   std::pair<float, float> endXY) {
+	std::pair<float, float> endXY) {
 
-  for (X = startXY.first, Y = startXY.second; Y < endXY.second;
-       Y += Y_STEP)
-    this->push_back(std::make_pair(X, Y));
+	for (X = startXY.first, Y = startXY.second; Y < endXY.second;
+		Y += Y_STEP)
+		this->push_back(std::make_pair(X, Y));
 
 	return;
 }
 
 void Clips::Go(void) {
-  for (std::list<pair<float, float>>::iterator it = this->begin();
-       it != this->end(); ++it)
-    this->pOut(it->first, it->second);
+	for (std::list<pair<float, float>>::iterator it = this->begin();
+		it != this->end(); ++it)
+		this->pOut(it->first, it->second);
 
-  return;
+	return;
 }
 
 void Clips::Return(void) {
-  this->reverse();
-  for (std::list<pair<float, float>>::iterator it = this->begin();
-       it != this->end(); ++it)
-    this->pOut(it->first, it->second);
-  this->reverse();
+	this->reverse();
+	for (std::list<pair<float, float>>::iterator it = this->begin();
+		it != this->end(); ++it)
+		this->pOut(it->first, it->second);
+	this->reverse();
 
-  return;
+	return;
 }
 
 void Clips::ShiftX(float pad) {
-  for (std::list<pair<float, float>>::iterator it = this->begin();
-       it != this->end(); ++it)
-    it->first += pad;
+	for (std::list<pair<float, float>>::iterator it = this->begin();
+		it != this->end(); ++it)
+		it->first += pad;
 }
 
 static void marlin_end(void) {
-  fprintf(stdout, "G92 E0.0\n");
-  fprintf(stdout, "G28\n");
-  fprintf(stdout, "M106 S0\n");
-  fprintf(stdout, "M109 S0\n");
-  return;
+	fprintf(stdout, "G92 E0.0\n");
+	fprintf(stdout, "G28\n");
+	fprintf(stdout, "M106 S0\n");
+	fprintf(stdout, "M109 S0\n");
+	return;
 }
 
 static void genGCODE(void) {
-  double X, XDEST, Y;
-  double X_END_RIGHT;
-  double X_END_LEFT;
-  int flag;
-  double X_END_STEP_1 = 0.400;
-  int layer;
-  float padY, padX;
-  Branch branch, subBranch, remainBranch, left2right, BaseLeft2Right,
-      right2zero, back2front, headEdge;
-  headSide sideRight, sideLeft, subSideLeft0, subSideLeft1, subSideLeft2,
-      subSideLeft3;
-  headSide edgeSideLeft0, edgeSideLeft1, edgeSideRight0, edgeSideRight1;
-  Clips clipsLeft, clipsRight;
-
-  BaseLeft2Right.New2(X_START - 1, (float)abs(X_START - 1));
-  left2right.New2(X_START, (float)abs(X_START));
-  right2zero.New((float)abs(X_START), 0.000);
-  back2front.New(Y_START, Y_EDGE);
-
-  branch.New(Y_START, Y_END);
-  subBranch.New(Y_START, Y_END + 4.000);
-  remainBranch.New(Y_END + 4.000, Y_END);
-
-  sideLeft.New(std::make_pair((float)X_START, (float)Y_END),
-               std::make_pair((float)0.0, (float)Y_EDGE));
-
-  sideRight.New(std::make_pair((float)0.0, (float)(Y_EDGE)),
-                std::make_pair((float)abs(X_START), (float)Y_END));
-
-  subSideLeft0.New(
-      std::make_pair((float)X_START, (float)(Y_END + 4.000)),
-      std::make_pair((float)(X_START + 16.0), (float)(Y_EDGE - 11.000)));
-
-  subSideLeft1.New(
-      std::make_pair((float)X_START, (float)(Y_END)),
-      std::make_pair((float)(X_START + 16.0), (float)(Y_EDGE - 11.000)));
-
-  subSideLeft2.New2(std::make_pair((float)abs(X_START), (float)(Y_END + 4.000)),
-                    std::make_pair((float)((float)abs(X_START) - 16.0),
-                                   (float)(Y_EDGE - 11.000)));
-
-  subSideLeft3.New2(std::make_pair((float)abs(X_START), (float)(Y_END)),
-                    std::make_pair((float)((float)abs(X_START) - 16.0),
-                                   (float)(Y_EDGE - 11.000)));
-
-  edgeSideLeft0.New2(std::make_pair((float)0.0, (float)(Y_EDGE)),
-                     std::make_pair((float)(-10.0), (float)(Y_EDGE - 11.000)));
-
-  edgeSideLeft1.New2(std::make_pair((float)0.0, (float)(Y_EDGE + 4.000)),
-                     std::make_pair((float)(-10.0), (float)(Y_EDGE - 11.000)));
-
-  edgeSideRight0.New(std::make_pair((float)(0.0), (float)(Y_EDGE + 4.000)),
-                     std::make_pair((float)(10.0), (float)(Y_EDGE - 11.000)));
-
-  edgeSideRight1.New(std::make_pair((float)(0.0), (float)(Y_EDGE)),
-                     std::make_pair((float)(10.0), (float)(Y_EDGE - 11.000)));
-
-  headEdge.New2(Y_EDGE, Y_EDGE + 4.000);
-
-  Z = Z_START;
+	double X, XDEST, Y;
+	double X_END_RIGHT;
+	double X_END_LEFT;
+	int flag;
+	double X_END_STEP_1 = 0.400;
+	int layer;
+	float padY, padX;
+	Branch branch, subBranch, remainBranch, left2right, BaseLeft2Right,
+		right2zero, back2front, headEdge;
+	headSide sideRight, sideLeft, subSideLeft0, subSideLeft1, subSideLeft2,
+		subSideLeft3;
+	headSide edgeSideLeft0, edgeSideLeft1, edgeSideRight0, edgeSideRight1;
+	Clips clipsLeft, clipsRight;
+
+	BaseLeft2Right.New2(X_START - 1, (float)abs(X_START - 1));
+	left2right.New2(X_START, (float)abs(X_START));
+	right2zero.New((float)abs(X_START), 0.000);
+	back2front.New(Y_START, Y_EDGE);
+
+	branch.New(Y_START, Y_END);
+	subBranch.New(Y_START, Y_END + 4.000);
+	remainBranch.New(Y_END + 4.000, Y_END);
+
+	sideLeft.New(std::make_pair((float)X_START, (float)Y_END),
+		std::make_pair((float)0.0, (float)Y_EDGE));
+
+	sideRight.New(std::make_pair((float)0.0, (float)(Y_EDGE)),
+		std::make_pair((float)abs(X_START), (float)Y_END));
+
+	subSideLeft0.New(
+		std::make_pair((float)X_START, (float)(Y_END + 4.000)),
+		std::make_pair((float)(X_START + 16.0), (float)(Y_EDGE - 11.000)));
+
+	subSideLeft1.New(
+		std::make_pair((float)X_START, (float)(Y_END)),
+		std::make_pair((float)(X_START + 16.0), (float)(Y_EDGE - 11.000)));
+
+	subSideLeft2.New2(std::make_pair((float)abs(X_START), (float)(Y_END + 4.000)),
+		std::make_pair((float)((float)abs(X_START) - 16.0),
+			(float)(Y_EDGE - 11.000)));
+
+	subSideLeft3.New2(std::make_pair((float)abs(X_START), (float)(Y_END)),
+		std::make_pair((float)((float)abs(X_START) - 16.0),
+			(float)(Y_EDGE - 11.000)));
+
+	edgeSideLeft0.New2(std::make_pair((float)0.0, (float)(Y_EDGE)),
+		std::make_pair((float)(-10.0), (float)(Y_EDGE - 11.000)));
+
+	edgeSideLeft1.New2(std::make_pair((float)0.0, (float)(Y_EDGE + 4.000)),
+		std::make_pair((float)(-10.0), (float)(Y_EDGE - 11.000)));
+
+	edgeSideRight0.New(std::make_pair((float)(0.0), (float)(Y_EDGE + 4.000)),
+		std::make_pair((float)(10.0), (float)(Y_EDGE - 11.000)));
+
+	edgeSideRight1.New(std::make_pair((float)(0.0), (float)(Y_EDGE)),
+		std::make_pair((float)(10.0), (float)(Y_EDGE - 11.000)));
+
+	headEdge.New2(Y_EDGE, Y_EDGE + 4.000);
+
+	Z = Z_START;
 
-  clipsLeft.New(std::make_pair((float) -90.00, (float) -35.00),
-	  	std::make_pair((float) -90.00, (float) 32.00));
-
-  clipsRight.New(std::make_pair((float) 90.00, (float) -35.00),
-	  	 std::make_pair((float) 90.00, (float) 32.00));
-
-  /* Author stamp */
-  stamp();
-  /* Init marlin abs_pos */
-  init_marlin();
-
-  for (layer = 0, padX = 0.76; layer < 2; ++layer) {
-    clipsLeft.Go();
-    clipsLeft.ShiftX(padX);
-    clipsLeft.Return();
-    clipsLeft.ShiftX(padX);
-    clipsLeft.Go();
-    clipsLeft.ShiftX(padX);
-    clipsLeft.Return();
-    clipsLeft.ShiftX(padX);
-    clipsLeft.Go();
-    clipsLeft.ShiftX(padX);
-    clipsLeft.Return();
-    clipsLeft.ShiftX(padX);
-    if (padX <= 0.9 && padX >= 0.7)
-      padX = -0.76;
-    else
-      padX = 0.76;
-    clipsLeft.ShiftX(padX);
-
-    Z += Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
-
-    Z += Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
-
-    Z += Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
-
-    Z += Z_STEP / 2;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+	clipsLeft.New(std::make_pair((float)-90.00, (float)-35.00),
+		std::make_pair((float)-90.00, (float)32.00));
+
+	clipsRight.New(std::make_pair((float)90.00, (float)-35.00),
+		std::make_pair((float)90.00, (float)32.00));
+
+	/* Author stamp */
+	stamp();
+	/* Init marlin abs_pos */
+	init_marlin();
+
+	for (layer = 0, padX = 0.76; layer < 2; ++layer) {
+		clipsLeft.Go();
+		clipsLeft.ShiftX(padX);
+		clipsLeft.Return();
+		clipsLeft.ShiftX(padX);
+		clipsLeft.Go();
+		clipsLeft.ShiftX(padX);
+		clipsLeft.Return();
+		clipsLeft.ShiftX(padX);
+		clipsLeft.Go();
+		clipsLeft.ShiftX(padX);
+		clipsLeft.Return();
+		clipsLeft.ShiftX(padX);
+		if (padX <= 0.9 && padX >= 0.7)
+			padX = -0.76;
+		else
+			padX = 0.76;
+		clipsLeft.ShiftX(padX);
+
+		Z += Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
+
+		Z += Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
+
+		Z += Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
+
+		Z += Z_STEP / 2;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-    Z += Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+		Z += Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-    Z += Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
-  }
-
-  padX = 0.76;
-  clipsLeft.ShiftX(padX);
-
-  for (layer = 0, padX = 0.76; layer < 4; ++layer) {
-
-    clipsLeft.Go();
-    clipsLeft.ShiftX(padX);
-    clipsLeft.Return();
-    clipsLeft.ShiftX(padX);
-    clipsLeft.Go();
-    clipsLeft.ShiftX(padX);
-    clipsLeft.Return();
-    clipsLeft.ShiftX(padX);
-    if (padX <= 0.9 && padX >= 0.7)
-      padX = -0.76;
-    else
-      padX = 0.76;
+		Z += Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
+	}
+
+	padX = 0.76;
+	clipsLeft.ShiftX(padX);
+
+	for (layer = 0, padX = 0.76; layer < 4; ++layer) {
+
+		clipsLeft.Go();
+		clipsLeft.ShiftX(padX);
+		clipsLeft.Return();
+		clipsLeft.ShiftX(padX);
+		clipsLeft.Go();
+		clipsLeft.ShiftX(padX);
+		clipsLeft.Return();
+		clipsLeft.ShiftX(padX);
+		if (padX <= 0.9 && padX >= 0.7)
+			padX = -0.76;
+		else
+			padX = 0.76;
 
-    clipsLeft.ShiftX(padX);
+		clipsLeft.ShiftX(padX);
 
-    Z += Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+		Z += Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-    Z += Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+		Z += Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-    Z += Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+		Z += Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-    Z += Z_STEP / 2;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+		Z += Z_STEP / 2;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-    Z += Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+		Z += Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-    Z += Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
-  }
+		Z += Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
+	}
 
 
-  E -= 1.000;
-  fprintf(stdout, "G1 E%.3f\n", E);
+	E -= 1.000;
+	fprintf(stdout, "G1 E%.3f\n", E);
 
-  Z = Z_START;
+	Z = Z_START;
 
-  fprintf(stdout, "G1 F%hu X%.3f Y%.3f Z%.3f\n", F_WHOLE, (float)90.00, (float)-35.00, Z);
+	fprintf(stdout, "G1 F%hu X%.3f Y%.3f Z%.3f\n", F_WHOLE, (float)90.00, (float)-35.00, Z);
 
-  E += 0.900;
+	E += 0.900;
 
-  for (layer = 0, padX = 0.76; layer < 2; ++layer) {
-    clipsRight.Go();
-    clipsRight.ShiftX(padX);
-    clipsRight.Return();
-    clipsRight.ShiftX(padX);
-    clipsRight.Go();
-    clipsRight.ShiftX(padX);
-    clipsRight.Return();
-    clipsRight.ShiftX(padX);
-    clipsRight.Go();
-    clipsRight.ShiftX(padX);
-    clipsRight.Return();
-    clipsRight.ShiftX(padX);
-    if (padX <= 0.9 && padX >= 0.7)
-      padX = -0.76;
-    else
-      padX = 0.76;
-    clipsRight.ShiftX(padX);
+	for (layer = 0, padX = 0.76; layer < 2; ++layer) {
+		clipsRight.Go();
+		clipsRight.ShiftX(padX);
+		clipsRight.Return();
+		clipsRight.ShiftX(padX);
+		clipsRight.Go();
+		clipsRight.ShiftX(padX);
+		clipsRight.Return();
+		clipsRight.ShiftX(padX);
+		clipsRight.Go();
+		clipsRight.ShiftX(padX);
+		clipsRight.Return();
+		clipsRight.ShiftX(padX);
+		if (padX <= 0.9 && padX >= 0.7)
+			padX = -0.76;
+		else
+			padX = 0.76;
+		clipsRight.ShiftX(padX);
 
-    Z += Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+		Z += Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-    Z += Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+		Z += Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-    Z += Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+		Z += Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-    Z += Z_STEP / 2;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+		Z += Z_STEP / 2;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-    Z += Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+		Z += Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-    Z += Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
-  }
+		Z += Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
+	}
 
-  padX = 0.76;
-  clipsRight.ShiftX(padX);
+	padX = 0.76;
+	clipsRight.ShiftX(padX);
 
-  for (layer = 0, padX = 0.76; layer < 4; ++layer) {
+	for (layer = 0, padX = 0.76; layer < 4; ++layer) {
 
-    clipsRight.Go();
-    clipsRight.ShiftX(padX);
-    clipsRight.Return();
-    clipsRight.ShiftX(padX);
-    clipsRight.Go();
-    clipsRight.ShiftX(padX);
-    clipsRight.Return();
-    clipsRight.ShiftX(padX);
-    if (padX <= 0.9 && padX >= 0.7)
-      padX = -0.76;
-    else
-      padX = 0.76;
+		clipsRight.Go();
+		clipsRight.ShiftX(padX);
+		clipsRight.Return();
+		clipsRight.ShiftX(padX);
+		clipsRight.Go();
+		clipsRight.ShiftX(padX);
+		clipsRight.Return();
+		clipsRight.ShiftX(padX);
+		if (padX <= 0.9 && padX >= 0.7)
+			padX = -0.76;
+		else
+			padX = 0.76;
 
-    clipsRight.ShiftX(padX);
+		clipsRight.ShiftX(padX);
 
-    Z += Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+		Z += Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-    Z += Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+		Z += Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-    Z += Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+		Z += Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-    Z += Z_STEP / 2;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+		Z += Z_STEP / 2;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-    Z += Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+		Z += Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-    Z += Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
-  }
+		Z += Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
+	}
 
-  E -= 0.450;
-  fprintf(stdout, "G1 E%.3f\n", E);
+	E -= 0.450;
+	fprintf(stdout, "G1 E%.3f\n", E);
 
-  Z = Z_START;
+	Z = Z_START;
 
-  fprintf(stdout, "G1 F%hu X%.3f Y%.3f Z%.3f\n", F_WHOLE, X_START, Y_START, Z);
+	fprintf(stdout, "G1 F%hu X%.3f Y%.3f Z%.3f\n", F_WHOLE, X_START, Y_START, Z);
 
-  E += 0.450;
+	E += 0.450;
 
-  BaseLeft2Right.Go2();
+	BaseLeft2Right.Go2();
 
-  Z += Z_STEP;
-  fprintf(stdout, "G1 Z%.3f\n", Z);
+	Z += Z_STEP;
+	fprintf(stdout, "G1 Z%.3f\n", Z);
 
-  Z += Z_STEP;
-  fprintf(stdout, "G1 Z%.3f\n", Z);
+	Z += Z_STEP;
+	fprintf(stdout, "G1 Z%.3f\n", Z);
 
-  BaseLeft2Right.Return2();
+	BaseLeft2Right.Return2();
 
-  Z += Z_STEP;
-  fprintf(stdout, "G1 Z%.3f\n", Z);
+	Z += Z_STEP;
+	fprintf(stdout, "G1 Z%.3f\n", Z);
 
-  Z += Z_STEP;
-  fprintf(stdout, "G1 Z%.3f\n", Z);
+	Z += Z_STEP;
+	fprintf(stdout, "G1 Z%.3f\n", Z);
 
-  BaseLeft2Right.Go2();
+	BaseLeft2Right.Go2();
 
-  Z += Z_STEP;
-  fprintf(stdout, "G1 Z%.3f\n", Z);
+	Z += Z_STEP;
+	fprintf(stdout, "G1 Z%.3f\n", Z);
 
-  Z += Z_STEP;
-  fprintf(stdout, "G1 Z%.3f\n", Z);
+	Z += Z_STEP;
+	fprintf(stdout, "G1 Z%.3f\n", Z);
 
-  BaseLeft2Right.Return2();
+	BaseLeft2Right.Return2();
 
-  Z -= Z_STEP;
-  fprintf(stdout, "G1 Z%.3f\n", Z);
+	Z -= Z_STEP;
+	fprintf(stdout, "G1 Z%.3f\n", Z);
 
-  Z -= Z_STEP;
-  fprintf(stdout, "G1 Z%.3f\n", Z);
+	Z -= Z_STEP;
+	fprintf(stdout, "G1 Z%.3f\n", Z);
 
-  Z -= Z_STEP;
-  fprintf(stdout, "G1 Z%.3f\n", Z);
+	Z -= Z_STEP;
+	fprintf(stdout, "G1 Z%.3f\n", Z);
 
-  Z -= Z_STEP;
-  fprintf(stdout, "G1 Z%.3f\n", Z);
+	Z -= Z_STEP;
+	fprintf(stdout, "G1 Z%.3f\n", Z);
 
-  Z -= Z_STEP;
-  fprintf(stdout, "G1 Z%.3f\n", Z);
+	Z -= Z_STEP;
+	fprintf(stdout, "G1 Z%.3f\n", Z);
 
-  Z -= Z_STEP;
-  fprintf(stdout, "G1 Z%.3f\n", Z);
+	Z -= Z_STEP;
+	fprintf(stdout, "G1 Z%.3f\n", Z);
 
-  fprintf(stdout, "G1 Y%.3f\n", Y_START - 0.80 * 1);
+	fprintf(stdout, "G1 Y%.3f\n", Y_START - 0.80 * 1);
 
-  BaseLeft2Right.Go2();
+	BaseLeft2Right.Go2();
 
-  Z += Z_STEP;
-  fprintf(stdout, "G1 Z%.3f\n", Z);
+	Z += Z_STEP;
+	fprintf(stdout, "G1 Z%.3f\n", Z);
 
-  Z += Z_STEP;
-  fprintf(stdout, "G1 Z%.3f\n", Z);
+	Z += Z_STEP;
+	fprintf(stdout, "G1 Z%.3f\n", Z);
 
-  BaseLeft2Right.Return2();
+	BaseLeft2Right.Return2();
 
-  Z += Z_STEP;
-  fprintf(stdout, "G1 Z%.3f\n", Z);
+	Z += Z_STEP;
+	fprintf(stdout, "G1 Z%.3f\n", Z);
 
-  Z += Z_STEP;
-  fprintf(stdout, "G1 Z%.3f\n", Z);
+	Z += Z_STEP;
+	fprintf(stdout, "G1 Z%.3f\n", Z);
 
-  BaseLeft2Right.Go2();
+	BaseLeft2Right.Go2();
 
-  Z += Z_STEP;
-  fprintf(stdout, "G1 Z%.3f\n", Z);
+	Z += Z_STEP;
+	fprintf(stdout, "G1 Z%.3f\n", Z);
 
-  Z += Z_STEP;
-  fprintf(stdout, "G1 Z%.3f\n", Z);
+	Z += Z_STEP;
+	fprintf(stdout, "G1 Z%.3f\n", Z);
 
-  BaseLeft2Right.Return2();
+	BaseLeft2Right.Return2();
 
-  Z -= Z_STEP;
-  fprintf(stdout, "G1 Z%.3f\n", Z);
+	Z -= Z_STEP;
+	fprintf(stdout, "G1 Z%.3f\n", Z);
 
-  Z -= Z_STEP;
-  fprintf(stdout, "G1 Z%.3f\n", Z);
+	Z -= Z_STEP;
+	fprintf(stdout, "G1 Z%.3f\n", Z);
 
-  Z -= Z_STEP;
-  fprintf(stdout, "G1 Z%.3f\n", Z);
+	Z -= Z_STEP;
+	fprintf(stdout, "G1 Z%.3f\n", Z);
 
-  Z -= Z_STEP;
-  fprintf(stdout, "G1 Z%.3f\n", Z);
+	Z -= Z_STEP;
+	fprintf(stdout, "G1 Z%.3f\n", Z);
 
-  Z -= Z_STEP;
-  fprintf(stdout, "G1 Z%.3f\n", Z);
+	Z -= Z_STEP;
+	fprintf(stdout, "G1 Z%.3f\n", Z);
 
-  Z -= Z_STEP;
-  fprintf(stdout, "G1 Z%.3f\n", Z);
+	Z -= Z_STEP;
+	fprintf(stdout, "G1 Z%.3f\n", Z);
 
-  fprintf(stdout, "G1 Y%.3f\n", Y_START - 0.80 * 2);
+	fprintf(stdout, "G1 Y%.3f\n", Y_START - 0.80 * 2);
 
-  // ##
+	// ##
 
-  BaseLeft2Right.Go2();
+	BaseLeft2Right.Go2();
 
-  Z += Z_STEP;
-  fprintf(stdout, "G1 Z%.3f\n", Z);
+	Z += Z_STEP;
+	fprintf(stdout, "G1 Z%.3f\n", Z);
 
-  Z += Z_STEP;
-  fprintf(stdout, "G1 Z%.3f\n", Z);
+	Z += Z_STEP;
+	fprintf(stdout, "G1 Z%.3f\n", Z);
 
-  BaseLeft2Right.Return2();
+	BaseLeft2Right.Return2();
 
-  Z += Z_STEP;
-  fprintf(stdout, "G1 Z%.3f\n", Z);
+	Z += Z_STEP;
+	fprintf(stdout, "G1 Z%.3f\n", Z);
 
-  Z += Z_STEP;
-  fprintf(stdout, "G1 Z%.3f\n", Z);
+	Z += Z_STEP;
+	fprintf(stdout, "G1 Z%.3f\n", Z);
 
-  BaseLeft2Right.Go2();
+	BaseLeft2Right.Go2();
 
-  Z += Z_STEP;
-  fprintf(stdout, "G1 Z%.3f\n", Z);
+	Z += Z_STEP;
+	fprintf(stdout, "G1 Z%.3f\n", Z);
 
-  Z += Z_STEP;
-  fprintf(stdout, "G1 Z%.3f\n", Z);
+	Z += Z_STEP;
+	fprintf(stdout, "G1 Z%.3f\n", Z);
 
-  BaseLeft2Right.Return2();
+	BaseLeft2Right.Return2();
 
-  Z -= Z_STEP;
-  fprintf(stdout, "G1 Z%.3f\n", Z);
+	Z -= Z_STEP;
+	fprintf(stdout, "G1 Z%.3f\n", Z);
 
-  Z -= Z_STEP;
-  fprintf(stdout, "G1 Z%.3f\n", Z);
+	Z -= Z_STEP;
+	fprintf(stdout, "G1 Z%.3f\n", Z);
 
-  Z -= Z_STEP;
-  fprintf(stdout, "G1 Z%.3f\n", Z);
+	Z -= Z_STEP;
+	fprintf(stdout, "G1 Z%.3f\n", Z);
 
-  Z -= Z_STEP;
-  fprintf(stdout, "G1 Z%.3f\n", Z);
+	Z -= Z_STEP;
+	fprintf(stdout, "G1 Z%.3f\n", Z);
 
-  Z -= Z_STEP;
-  fprintf(stdout, "G1 Z%.3f\n", Z);
+	Z -= Z_STEP;
+	fprintf(stdout, "G1 Z%.3f\n", Z);
 
-  Z -= Z_STEP;
-  fprintf(stdout, "G1 Z%.3f\n", Z);
+	Z -= Z_STEP;
+	fprintf(stdout, "G1 Z%.3f\n", Z);
 
-  fprintf(stdout, "G1 Y%.3f\n", Y_START - 0.80 * 3);
+	fprintf(stdout, "G1 Y%.3f\n", Y_START - 0.80 * 3);
 
-  BaseLeft2Right.Go2();
+	BaseLeft2Right.Go2();
 
-  Z += Z_STEP;
-  fprintf(stdout, "G1 Z%.3f\n", Z);
+	Z += Z_STEP;
+	fprintf(stdout, "G1 Z%.3f\n", Z);
 
-  Z += Z_STEP;
-  fprintf(stdout, "G1 Z%.3f\n", Z);
+	Z += Z_STEP;
+	fprintf(stdout, "G1 Z%.3f\n", Z);
 
-  BaseLeft2Right.Return2();
+	BaseLeft2Right.Return2();
 
-  Z += Z_STEP;
-  fprintf(stdout, "G1 Z%.3f\n", Z);
+	Z += Z_STEP;
+	fprintf(stdout, "G1 Z%.3f\n", Z);
 
-  Z += Z_STEP;
-  fprintf(stdout, "G1 Z%.3f\n", Z);
+	Z += Z_STEP;
+	fprintf(stdout, "G1 Z%.3f\n", Z);
 
-  BaseLeft2Right.Go2();
+	BaseLeft2Right.Go2();
 
-  Z += Z_STEP;
-  fprintf(stdout, "G1 Z%.3f\n", Z);
+	Z += Z_STEP;
+	fprintf(stdout, "G1 Z%.3f\n", Z);
 
-  Z += Z_STEP;
-  fprintf(stdout, "G1 Z%.3f\n", Z);
+	Z += Z_STEP;
+	fprintf(stdout, "G1 Z%.3f\n", Z);
 
-  BaseLeft2Right.Return2();
+	BaseLeft2Right.Return2();
 
-  Z -= Z_STEP;
-  fprintf(stdout, "G1 Z%.3f\n", Z);
+	Z -= Z_STEP;
+	fprintf(stdout, "G1 Z%.3f\n", Z);
 
-  Z -= Z_STEP;
-  fprintf(stdout, "G1 Z%.3f\n", Z);
+	Z -= Z_STEP;
+	fprintf(stdout, "G1 Z%.3f\n", Z);
 
-  Z -= Z_STEP;
-  fprintf(stdout, "G1 Z%.3f\n", Z);
+	Z -= Z_STEP;
+	fprintf(stdout, "G1 Z%.3f\n", Z);
 
-  Z -= Z_STEP;
-  fprintf(stdout, "G1 Z%.3f\n", Z);
+	Z -= Z_STEP;
+	fprintf(stdout, "G1 Z%.3f\n", Z);
 
-  Z -= Z_STEP;
-  fprintf(stdout, "G1 Z%.3f\n", Z);
+	Z -= Z_STEP;
+	fprintf(stdout, "G1 Z%.3f\n", Z);
 
-  Z -= Z_STEP;
-  fprintf(stdout, "G1 Z%.3f\n", Z);
+	Z -= Z_STEP;
+	fprintf(stdout, "G1 Z%.3f\n", Z);
 
-  fprintf(stdout, "G1 Y%.3f\n", Y_START - 0.80 * 4);
+	fprintf(stdout, "G1 Y%.3f\n", Y_START - 0.80 * 4);
 
-  BaseLeft2Right.Go2();
+	BaseLeft2Right.Go2();
 
-  Z += Z_STEP;
-  fprintf(stdout, "G1 Z%.3f\n", Z);
+	Z += Z_STEP;
+	fprintf(stdout, "G1 Z%.3f\n", Z);
 
-  Z += Z_STEP;
-  fprintf(stdout, "G1 Z%.3f\n", Z);
+	Z += Z_STEP;
+	fprintf(stdout, "G1 Z%.3f\n", Z);
 
-  BaseLeft2Right.Return2();
+	BaseLeft2Right.Return2();
 
-  Z += Z_STEP;
-  fprintf(stdout, "G1 Z%.3f\n", Z);
+	Z += Z_STEP;
+	fprintf(stdout, "G1 Z%.3f\n", Z);
 
-  Z += Z_STEP;
-  fprintf(stdout, "G1 Z%.3f\n", Z);
+	Z += Z_STEP;
+	fprintf(stdout, "G1 Z%.3f\n", Z);
 
-  BaseLeft2Right.Go2();
+	BaseLeft2Right.Go2();
 
-  Z += Z_STEP;
-  fprintf(stdout, "G1 Z%.3f\n", Z);
+	Z += Z_STEP;
+	fprintf(stdout, "G1 Z%.3f\n", Z);
 
-  Z += Z_STEP;
-  fprintf(stdout, "G1 Z%.3f\n", Z);
+	Z += Z_STEP;
+	fprintf(stdout, "G1 Z%.3f\n", Z);
 
-  BaseLeft2Right.Return2();
+	BaseLeft2Right.Return2();
 
-  Z = Z_START;
+	Z = Z_START;
 
-  fprintf(stdout, "G1 F%hu X%.3f Y%.3f Z%.3f\n", F_WHOLE, X_START, Y_START, Z);
+	fprintf(stdout, "G1 F%hu X%.3f Y%.3f Z%.3f\n", F_WHOLE, X_START, Y_START, Z);
 
-  for (layer = 0, padY = 1; layer < LAYER_BRANCH / 10; ++layer) {
+	for (layer = 0, padY = 1; layer < LAYER_BRANCH / 10; ++layer) {
 
-    branch.Go();
-    sideLeft.Go();
-    sideRight.Go();
+		branch.Go();
+		sideLeft.Go();
+		sideRight.Go();
 
-    sideRight.ShiftY(padY);
-    sideLeft.ShiftY(padY);
+		sideRight.ShiftY(padY);
+		sideLeft.ShiftY(padY);
 
-    sideRight.Return();
-    sideLeft.Return();
+		sideRight.Return();
+		sideLeft.Return();
 
-    sideRight.ShiftY(padY);
-    sideLeft.ShiftY(padY);
+		sideRight.ShiftY(padY);
+		sideLeft.ShiftY(padY);
 
-    sideLeft.Go();
-    sideRight.Go();
+		sideLeft.Go();
+		sideRight.Go();
 
-    sideRight.ShiftY(padY);
-    sideLeft.ShiftY(padY);
+		sideRight.ShiftY(padY);
+		sideLeft.ShiftY(padY);
 
-    sideRight.Return();
-    sideLeft.Return();
+		sideRight.Return();
+		sideLeft.Return();
 
-    sideRight.ShiftY(padY);
-    sideLeft.ShiftY(padY);
+		sideRight.ShiftY(padY);
+		sideLeft.ShiftY(padY);
 
-    sideLeft.Go();
-    sideRight.Go();
+		sideLeft.Go();
+		sideRight.Go();
 
-    branch.Return();
-    branch.Go();
+		branch.Return();
+		branch.Go();
 
-    Z += Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+		Z += Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-    Z += Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+		Z += Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-    Z += Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+		Z += Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-    Z += Z_STEP / 2;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+		Z += Z_STEP / 2;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-    padY = -1;
+		padY = -1;
 
-    sideRight.Return();
-    sideLeft.Return();
+		sideRight.Return();
+		sideLeft.Return();
 
-    sideRight.ShiftY(padY);
-    sideLeft.ShiftY(padY);
+		sideRight.ShiftY(padY);
+		sideLeft.ShiftY(padY);
 
-    sideLeft.Go();
-    sideRight.Go();
+		sideLeft.Go();
+		sideRight.Go();
 
-    sideRight.ShiftY(padY);
-    sideLeft.ShiftY(padY);
+		sideRight.ShiftY(padY);
+		sideLeft.ShiftY(padY);
 
-    sideRight.Return();
-    sideLeft.Return();
+		sideRight.Return();
+		sideLeft.Return();
 
-    sideRight.ShiftY(padY);
-    sideLeft.ShiftY(padY);
+		sideRight.ShiftY(padY);
+		sideLeft.ShiftY(padY);
 
-    sideLeft.Go();
-    sideRight.Go();
+		sideLeft.Go();
+		sideRight.Go();
 
-    sideRight.ShiftY(padY);
-    sideLeft.ShiftY(padY);
+		sideRight.ShiftY(padY);
+		sideLeft.ShiftY(padY);
 
-    sideRight.Return();
-    sideLeft.Return();
+		sideRight.Return();
+		sideLeft.Return();
 
-    branch.Return();
+		branch.Return();
 
-    padY = 1;
+		padY = 1;
 
-    Z += Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+		Z += Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-    Z += Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+		Z += Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-    Z += Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+		Z += Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-    Z += Z_STEP / 2;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
-  }
+		Z += Z_STEP / 2;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
+	}
 
-  for (layer = LAYER_BRANCH - (LAYER_BRANCH / 10); --layer;) {
-    branch.Go();
-    subSideLeft1.Go();
-    subSideLeft1.Return();
-    remainBranch.Return();
-    subSideLeft0.Go();
-    subSideLeft0.Return();
-    Z += Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+	for (layer = LAYER_BRANCH - (LAYER_BRANCH / 10); --layer;) {
+		branch.Go();
+		subSideLeft1.Go();
+		subSideLeft1.Return();
+		remainBranch.Return();
+		subSideLeft0.Go();
+		subSideLeft0.Return();
+		Z += Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-    Z += Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+		Z += Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-    subBranch.Return();
+		subBranch.Return();
 
-    Z += Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+		Z += Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-    Z += Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+		Z += Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-    Z += Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+		Z += Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-    Z += Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
-  }
+		Z += Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
+	}
 
-  left2right.Go2(true);
+	left2right.Go2(true);
 
-  for (layer = LAYER_BRANCH - (LAYER_BRANCH / 10); --layer;) {
-    Z -= Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+	for (layer = LAYER_BRANCH - (LAYER_BRANCH / 10); --layer;) {
+		Z -= Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-    Z -= Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+		Z -= Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-    Z -= Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+		Z -= Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-    Z -= Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+		Z -= Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-    Z -= Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+		Z -= Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-    Z -= Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
-  }
+		Z -= Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
+	}
 
-  E += 1.400;
-  fprintf(stdout, "G1 E%.3f\n", E);
+	E += 1.400;
+	fprintf(stdout, "G1 E%.3f\n", E);
 
-  fprintf(stdout, "G4 S2\n");
+	fprintf(stdout, "G4 S2\n");
 
-  E += 1.400;
-  fprintf(stdout, "G1 E%.3f\n", E);
+	E += 1.400;
+	fprintf(stdout, "G1 E%.3f\n", E);
 
 
-  E += STEP_E1 * 11;
+	E += STEP_E1 * 11;
 
-  for (layer = LAYER_BRANCH - (LAYER_BRANCH / 10); --layer;) {
-    branch.Go();
-    subSideLeft3.Go();
-    subSideLeft3.Return();
-    remainBranch.Return();
-    subSideLeft2.Go();
-    subSideLeft2.Return();
+	for (layer = LAYER_BRANCH - (LAYER_BRANCH / 10); --layer;) {
+		branch.Go();
+		subSideLeft3.Go();
+		subSideLeft3.Return();
+		remainBranch.Return();
+		subSideLeft2.Go();
+		subSideLeft2.Return();
 
-    Z += Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+		Z += Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-    Z += Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+		Z += Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-    subBranch.Return();
+		subBranch.Return();
 
-    Z += Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+		Z += Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-    Z += Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+		Z += Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-    Z += Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+		Z += Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-    Z += Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
-  }
+		Z += Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
+	}
 
-  E -= 0.450;
-  fprintf(stdout, "G1 E%.3f\n", E);
+	E -= 0.450;
+	fprintf(stdout, "G1 E%.3f\n", E);
 
-  right2zero.Go2(true);
-  back2front.Go(true);
+	right2zero.Go2(true);
+	back2front.Go(true);
 
-  for (layer = LAYER_BRANCH - (LAYER_BRANCH / 9); --layer;) {
-    Z -= Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+	for (layer = LAYER_BRANCH - (LAYER_BRANCH / 9); --layer;) {
+		Z -= Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-    Z -= Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+		Z -= Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-    Z -= Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+		Z -= Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-    Z -= Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+		Z -= Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-    Z -= Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+		Z -= Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-    Z -= Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
-  }
+		Z -= Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
+	}
 
-  E += 1.000;
-  fprintf(stdout, "G1 E%.3f\n", E);
+	E += 1.000;
+	fprintf(stdout, "G1 E%.3f\n", E);
 
-  fprintf(stdout, "G4 S2\n");
+	fprintf(stdout, "G4 S2\n");
 
-  E += 1.000;
-  fprintf(stdout, "G1 E%.3f\n", E);
+	E += 1.000;
+	fprintf(stdout, "G1 E%.3f\n", E);
 
 
-  E += STEP_E1;
-  E += STEP_E1;
-  E += STEP_E1;
-  E += STEP_E1;
+	E += STEP_E1;
+	E += STEP_E1;
+	E += STEP_E1;
+	E += STEP_E1;
 
-  layer = LAYER_BRANCH - (LAYER_BRANCH / 10);
-  layer--;
+	layer = LAYER_BRANCH - (LAYER_BRANCH / 10);
+	layer--;
 
-  do {
-    edgeSideLeft1.Go();
-    edgeSideLeft1.Return();
-    headEdge.Return();
-    edgeSideLeft0.Go();
-    edgeSideLeft0.Return();
+	do {
+		edgeSideLeft1.Go();
+		edgeSideLeft1.Return();
+		headEdge.Return();
+		edgeSideLeft0.Go();
+		edgeSideLeft0.Return();
 
-    headEdge.Go();
+		headEdge.Go();
 
-    edgeSideRight0.Go();
-    edgeSideRight0.Return();
-    headEdge.Return();
-    edgeSideRight1.Go();
-    edgeSideRight1.Return();
+		edgeSideRight0.Go();
+		edgeSideRight0.Return();
+		headEdge.Return();
+		edgeSideRight1.Go();
+		edgeSideRight1.Return();
 
-    Z += Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+		Z += Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-    Z += Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+		Z += Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-    Z += Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+		Z += Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-    Z += Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+		Z += Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-    Z += Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+		Z += Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-    Z += Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+		Z += Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-  } while (--layer);
+	} while (--layer);
 
-  headEdge.Go();
-  Z += Z_STEP;
-  fprintf(stdout, "G1 Z%.3f\n", Z);
+	headEdge.Go();
+	Z += Z_STEP;
+	fprintf(stdout, "G1 Z%.3f\n", Z);
 
-  Z += Z_STEP;
-  fprintf(stdout, "G1 Z%.3f\n", Z);
+	Z += Z_STEP;
+	fprintf(stdout, "G1 Z%.3f\n", Z);
 
-  Z += Z_STEP;
-  fprintf(stdout, "G1 Z%.3f\n", Z);
+	Z += Z_STEP;
+	fprintf(stdout, "G1 Z%.3f\n", Z);
 
-  headEdge.Return();
+	headEdge.Return();
 
-  E -= 1.000;
-  fprintf(stdout, "G1 E%.3f\n", E);
+	E -= 1.000;
+	fprintf(stdout, "G1 E%.3f\n", E);
 
-  fprintf(stdout, "G1 F%hu X%.3f Y%.3f Z%.3f\n", F_WHOLE, X_START, Y_START, Z);
+	fprintf(stdout, "G1 F%hu X%.3f Y%.3f Z%.3f\n", F_WHOLE, X_START, Y_START, Z);
 
-  fprintf(stdout, "G4 S60\n");
+	fprintf(stdout, "G4 S60\n");
 
-  E += 0.100;
-  fprintf(stdout, "G1 E%.3f\n", E);
+	E += 0.100;
+	fprintf(stdout, "G1 E%.3f\n", E);
 
-  E += STEP_E1 * 4;
+	E += STEP_E1 * 4;
 
-  for (layer = 6, padY = 0.76; --layer;) {
+	for (layer = 6, padY = 0.76; --layer;) {
 
-    branch.Go();
-    sideLeft.Go();
-    sideRight.Go();
-    
-    sideRight.ShiftY(padY);
-    sideLeft.ShiftY(padY);
+		branch.Go();
+		sideLeft.Go();
+		sideRight.Go();
 
-    sideRight.Return();
-    sideLeft.Return();
+		sideRight.ShiftY(padY);
+		sideLeft.ShiftY(padY);
 
-    sideRight.ShiftY(padY);
-    sideLeft.ShiftY(padY);
+		sideRight.Return();
+		sideLeft.Return();
 
-    sideLeft.Go();
-    sideRight.Go();
+		sideRight.ShiftY(padY);
+		sideLeft.ShiftY(padY);
 
-    sideRight.ShiftY(padY);
-    sideLeft.ShiftY(padY);
+		sideLeft.Go();
+		sideRight.Go();
 
-    sideRight.Return();
-    sideLeft.Return();
+		sideRight.ShiftY(padY);
+		sideLeft.ShiftY(padY);
 
-    sideRight.ShiftY(padY);
-    sideLeft.ShiftY(padY);
+		sideRight.Return();
+		sideLeft.Return();
 
-    sideLeft.Go();
-    sideRight.Go();
+		sideRight.ShiftY(padY);
+		sideLeft.ShiftY(padY);
 
-    branch.Return();
-    branch.Go();
+		sideLeft.Go();
+		sideRight.Go();
 
-    Z += Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+		branch.Return();
+		branch.Go();
 
-    Z += Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+		Z += Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-    Z += Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+		Z += Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-    Z += Z_STEP / 2;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+		Z += Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-    padY = -0.76;
+		Z += Z_STEP / 2;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-    sideRight.Return();
-    sideLeft.Return();
+		padY = -0.76;
 
-    sideRight.ShiftY(padY);
-    sideLeft.ShiftY(padY);
+		sideRight.Return();
+		sideLeft.Return();
 
-    sideLeft.Go();
-    sideRight.Go();
+		sideRight.ShiftY(padY);
+		sideLeft.ShiftY(padY);
 
-    sideRight.ShiftY(padY);
-    sideLeft.ShiftY(padY);
+		sideLeft.Go();
+		sideRight.Go();
 
-    sideRight.Return();
-    sideLeft.Return();
+		sideRight.ShiftY(padY);
+		sideLeft.ShiftY(padY);
 
-    sideRight.ShiftY(padY);
-    sideLeft.ShiftY(padY);
+		sideRight.Return();
+		sideLeft.Return();
 
-    sideLeft.Go();
-    sideRight.Go();
+		sideRight.ShiftY(padY);
+		sideLeft.ShiftY(padY);
 
-    sideRight.ShiftY(padY);
-    sideLeft.ShiftY(padY);
+		sideLeft.Go();
+		sideRight.Go();
 
-    sideRight.Return();
-    sideLeft.Return();
+		sideRight.ShiftY(padY);
+		sideLeft.ShiftY(padY);
 
-    branch.Return();
+		sideRight.Return();
+		sideLeft.Return();
 
-    padY = 0.76;
+		branch.Return();
 
-    Z += Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+		padY = 0.76;
 
-    Z += Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+		Z += Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-    Z += Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+		Z += Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-    Z += Z_STEP / 2;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
-  }
+		Z += Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-  branch.Go();
+		Z += Z_STEP / 2;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
+	}
 
-  for (layer = 204, padY = 0.76; --layer;) {
-    sideLeft.Go();
-    sideRight.Go();
-    sideRight.ShiftY(padY);
-    sideLeft.ShiftY(padY);
+	branch.Go();
 
-    sideRight.Return();
-    sideLeft.Return();
+	for (layer = 204, padY = 0.76; --layer;) {
+		sideLeft.Go();
+		sideRight.Go();
+		sideRight.ShiftY(padY);
+		sideLeft.ShiftY(padY);
 
-    sideRight.ShiftY(padY);
-    sideLeft.ShiftY(padY);
+		sideRight.Return();
+		sideLeft.Return();
 
-    sideLeft.Go();
-    sideRight.Go();
+		sideRight.ShiftY(padY);
+		sideLeft.ShiftY(padY);
 
-    sideRight.ShiftY(padY);
-    sideLeft.ShiftY(padY);
+		sideLeft.Go();
+		sideRight.Go();
 
-    sideRight.Return();
-    sideLeft.Return();
+		sideRight.ShiftY(padY);
+		sideLeft.ShiftY(padY);
 
-    sideRight.ShiftY(padY);
-    sideLeft.ShiftY(padY);
+		sideRight.Return();
+		sideLeft.Return();
 
-    sideLeft.Go();
-    sideRight.Go();
+		sideRight.ShiftY(padY);
+		sideLeft.ShiftY(padY);
 
-    Z += Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+		sideLeft.Go();
+		sideRight.Go();
 
-    Z += Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+		Z += Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-    Z += Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+		Z += Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-    Z += Z_STEP / 2;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+		Z += Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-    padY = -0.76;
+		Z += Z_STEP / 2;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-    sideRight.Return();
-    sideLeft.Return();
+		padY = -0.76;
 
-    sideRight.ShiftY(padY);
-    sideLeft.ShiftY(padY);
+		sideRight.Return();
+		sideLeft.Return();
 
-    sideLeft.Go();
-    sideRight.Go();
+		sideRight.ShiftY(padY);
+		sideLeft.ShiftY(padY);
 
-    sideRight.ShiftY(padY);
-    sideLeft.ShiftY(padY);
+		sideLeft.Go();
+		sideRight.Go();
 
-    sideRight.Return();
-    sideLeft.Return();
+		sideRight.ShiftY(padY);
+		sideLeft.ShiftY(padY);
 
-    sideRight.ShiftY(padY);
-    sideLeft.ShiftY(padY);
+		sideRight.Return();
+		sideLeft.Return();
 
-    sideLeft.Go();
-    sideRight.Go();
+		sideRight.ShiftY(padY);
+		sideLeft.ShiftY(padY);
 
-    sideRight.ShiftY(padY);
-    sideLeft.ShiftY(padY);
+		sideLeft.Go();
+		sideRight.Go();
 
-    sideRight.Return();
-    sideLeft.Return();
+		sideRight.ShiftY(padY);
+		sideLeft.ShiftY(padY);
 
-    padY = 0.76;
+		sideRight.Return();
+		sideLeft.Return();
 
-    Z += Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+		padY = 0.76;
 
-    Z += Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+		Z += Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-    Z += Z_STEP;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
+		Z += Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-    Z += Z_STEP / 2;
-    fprintf(stdout, "G1 Z%.3f\n", Z);
-  }
+		Z += Z_STEP;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
 
-  marlin_end();
+		Z += Z_STEP / 2;
+		fprintf(stdout, "G1 Z%.3f\n", Z);
+	}
 
-  branch.clear();
-  subBranch.clear();
-  remainBranch.clear();
-  left2right.clear();
-  right2zero.clear();
-  back2front.clear();
-  headEdge.clear();
-  sideRight.clear();
-  sideLeft.clear();
-  subSideLeft0.clear();
-  subSideLeft1.clear();
-  subSideLeft2.clear();
-  subSideLeft3.clear();
-  edgeSideLeft0.clear();
-  edgeSideLeft1.clear();
-  edgeSideRight0.clear();
-  edgeSideRight1.clear();
-  clipsLeft.clear();
-  clipsRight.clear();
+	marlin_end();
 
-  return;
+	branch.clear();
+	subBranch.clear();
+	remainBranch.clear();
+	left2right.clear();
+	right2zero.clear();
+	back2front.clear();
+	headEdge.clear();
+	sideRight.clear();
+	sideLeft.clear();
+	subSideLeft0.clear();
+	subSideLeft1.clear();
+	subSideLeft2.clear();
+	subSideLeft3.clear();
+	edgeSideLeft0.clear();
+	edgeSideLeft1.clear();
+	edgeSideRight0.clear();
+	edgeSideRight1.clear();
+	clipsLeft.clear();
+	clipsRight.clear();
+
+	return;
 }

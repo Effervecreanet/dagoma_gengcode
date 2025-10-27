@@ -39,221 +39,221 @@ int WritePipe(HANDLE hPipe, CHAR* buffer);
 
 static void stamp(void)
 {
-  struct tm *tmv;
-  time_t timet;
-  char buff[128];
+	struct tm* tmv;
+	time_t timet;
+	char buff[128];
 
-  time(&timet);
-  tmv = localtime(&timet);
-  memset(buff, 0, 128);
-  strftime(buff, 128,"; Generated at %a %b %e %H:%M:%S %Y\n", tmv);
-  WritePipe(hPipe, buff);
-  memset(buff, 0, 128);
-//  sprintf(buff, "; With z_start: %s heat temp: %s speed: %s\n", Z_START, heatTemp, F_WHOLE);
-  sprintf(buff, "; With z_start: %s heat temp: %s speed: %s\n", Z_START, heatTemp, F_WHOLE);
-  WritePipe(hPipe, buff);
-  WritePipe(hPipe, "; Author: Franck Lesage\n");
-  WritePipe(hPipe, "; Website: http://www.effervecrea.net\n");
-  WritePipe(hPipe, "; E-mail: effervecreanet@orange.fr\n");
+	time(&timet);
+	tmv = localtime(&timet);
+	memset(buff, 0, 128);
+	strftime(buff, 128, "; Generated at %a %b %e %H:%M:%S %Y\n", tmv);
+	WritePipe(hPipe, buff);
+	memset(buff, 0, 128);
+	//  sprintf(buff, "; With z_start: %s heat temp: %s speed: %s\n", Z_START, heatTemp, F_WHOLE);
+	sprintf(buff, "; With z_start: %s heat temp: %s speed: %s\n", Z_START, heatTemp, F_WHOLE);
+	WritePipe(hPipe, buff);
+	WritePipe(hPipe, "; Author: Franck Lesage\n");
+	WritePipe(hPipe, "; Website: http://www.effervecrea.net\n");
+	WritePipe(hPipe, "; E-mail: effervecreanet@orange.fr\n");
 
-  return;
+	return;
 }
 
 class Branch : public std::list<float> {
 private:
-    void pOut(float y, bool noextrude) {
-        char buffer[255];
+	void pOut(float y, bool noextrude) {
+		char buffer[255];
 
-        ZeroMemory(buffer, 255);
-        
-        if (noextrude) {
-            sprintf(buffer, "G1 F%s Y%.3f\n", F_WHOLE, y);
-        }
-        else {
-            E += STEP_E1;
-            sprintf(buffer, "G1 F%s E%.3f Y%.3f\n", F_WHOLE, E, y);
-        }
-        // printf("G1 F%s Y%.3f\n", y);
+		ZeroMemory(buffer, 255);
 
-        WritePipe(hPipe, buffer);
+		if (noextrude) {
+			sprintf(buffer, "G1 F%s Y%.3f\n", F_WHOLE, y);
+		}
+		else {
+			E += STEP_E1;
+			sprintf(buffer, "G1 F%s E%.3f Y%.3f\n", F_WHOLE, E, y);
+		}
+		// printf("G1 F%s Y%.3f\n", y);
 
-        return;
-    }
-    void pOut2(float y, bool noextrude) {
-        char buffer[255];
+		WritePipe(hPipe, buffer);
 
-        ZeroMemory(buffer, 255);
+		return;
+	}
+	void pOut2(float y, bool noextrude) {
+		char buffer[255];
 
-        if (noextrude == true) {
-            sprintf(buffer, "G1 F%s X%.3f\n", F_WHOLE, (y < 0.009 && y > -0.001) ? 0.0 : y);
-        }
-        else {
-            E += STEP_E1;
-            sprintf(buffer, "G1 F%s E%.3f X%.3f\n", F_WHOLE, E,
-                (y < 0.009 && y > -0.001) ? 0.0 : y);
-        }
-        // printf("G1 F%s Y%.3f\n", y);
-        
-        WritePipe(hPipe, buffer);
+		ZeroMemory(buffer, 255);
 
-        return;
-    }
+		if (noextrude == true) {
+			sprintf(buffer, "G1 F%s X%.3f\n", F_WHOLE, (y < 0.009 && y > -0.001) ? 0.0 : y);
+		}
+		else {
+			E += STEP_E1;
+			sprintf(buffer, "G1 F%s E%.3f X%.3f\n", F_WHOLE, E,
+				(y < 0.009 && y > -0.001) ? 0.0 : y);
+		}
+		// printf("G1 F%s Y%.3f\n", y);
+
+		WritePipe(hPipe, buffer);
+
+		return;
+	}
 
 public:
-    void New(float ystart, float yend);
-    void New2(float ystart, float yend);
-    void Go(bool noextrude = false);
-    void Return(void);
-    void Go2(bool noextrude = false);
-    void Return2(void);
+	void New(float ystart, float yend);
+	void New2(float ystart, float yend);
+	void Go(bool noextrude = false);
+	void Return(void);
+	void Go2(bool noextrude = false);
+	void Return2(void);
 };
 
 void Branch::New(float ystart, float yend) {
-    float Y;
+	float Y;
 
-    for (Y = ystart; Y > yend; Y -= Y_STEP)
-        this->push_back(Y);
+	for (Y = ystart; Y > yend; Y -= Y_STEP)
+		this->push_back(Y);
 
-    return;
+	return;
 }
 
 void Branch::New2(float ystart, float yend) {
-    float Y;
+	float Y;
 
-    for (Y = ystart; Y < yend; Y += Y_STEP)
-        this->push_back(Y);
+	for (Y = ystart; Y < yend; Y += Y_STEP)
+		this->push_back(Y);
 
-    return;
+	return;
 }
 void Branch::Go(bool noextrude) {
-    for (std::list<float>::iterator it = this->begin(); it != this->end(); ++it)
-        this->pOut(*it, noextrude);
+	for (std::list<float>::iterator it = this->begin(); it != this->end(); ++it)
+		this->pOut(*it, noextrude);
 
-    return;
+	return;
 }
 
 void Branch::Go2(bool noextrude) {
-    for (std::list<float>::iterator it = this->begin(); it != this->end(); ++it)
-        this->pOut2(*it, noextrude);
+	for (std::list<float>::iterator it = this->begin(); it != this->end(); ++it)
+		this->pOut2(*it, noextrude);
 
-    return;
+	return;
 }
 
 void Branch::Return(void) {
-    this->reverse();
-    for (std::list<float>::iterator it = this->begin(); it != this->end(); ++it)
-        this->pOut(*it, false);
-    this->reverse();
+	this->reverse();
+	for (std::list<float>::iterator it = this->begin(); it != this->end(); ++it)
+		this->pOut(*it, false);
+	this->reverse();
 
-    return;
+	return;
 }
 void Branch::Return2(void) {
-    this->reverse();
-    for (std::list<float>::iterator it = this->begin(); it != this->end(); ++it)
-        this->pOut2(*it, false);
-    this->reverse();
+	this->reverse();
+	for (std::list<float>::iterator it = this->begin(); it != this->end(); ++it)
+		this->pOut2(*it, false);
+	this->reverse();
 
-    return;
+	return;
 }
 
 class headSide : public std::list<pair<float, float>> {
 private:
-    void pOut(float x, float y) {
-        char buffer[255];
+	void pOut(float x, float y) {
+		char buffer[255];
 
-        ZeroMemory(buffer, 255);
+		ZeroMemory(buffer, 255);
 
-        E += STEP_E2;
-        sprintf(buffer, "G1 F%s E%.3f X%.3f Y%.3f\n", F_WHOLE, E, x, y);
-        // printf("G1 F%s X%.3f Y%.3f\n", x, y);
+		E += STEP_E2;
+		sprintf(buffer, "G1 F%s E%.3f X%.3f Y%.3f\n", F_WHOLE, E, x, y);
+		// printf("G1 F%s X%.3f Y%.3f\n", x, y);
 
-        WritePipe(hPipe, buffer);
+		WritePipe(hPipe, buffer);
 
-        return;
-    }
+		return;
+	}
 
 public:
-    void New(std::pair<float, float> startXY, std::pair<float, float> endXY);
-    void New2(std::pair<float, float> startXY, std::pair<float, float> endXY);
-    void Go(void);
-    void Return(void);
-    void ShiftY(float pad);
+	void New(std::pair<float, float> startXY, std::pair<float, float> endXY);
+	void New2(std::pair<float, float> startXY, std::pair<float, float> endXY);
+	void Go(void);
+	void Return(void);
+	void ShiftY(float pad);
 };
 
 void headSide::New(std::pair<float, float> startXY,
-    std::pair<float, float> endXY) {
-    float Y, X;
+	std::pair<float, float> endXY) {
+	float Y, X;
 
-    for (X = startXY.first, Y = startXY.second; X < endXY.first;
-        X += X_STEP, Y = Y + (endXY.first > 0 ? 0.032 : -0.032))
-        this->push_back(std::make_pair(X, Y));
+	for (X = startXY.first, Y = startXY.second; X < endXY.first;
+		X += X_STEP, Y = Y + (endXY.first > 0 ? 0.032 : -0.032))
+		this->push_back(std::make_pair(X, Y));
 
-    return;
+	return;
 }
 
 void headSide::New2(std::pair<float, float> startXY,
-    std::pair<float, float> endXY) {
-    float Y, X;
+	std::pair<float, float> endXY) {
+	float Y, X;
 
-    for (X = startXY.first, Y = startXY.second; X > endXY.first;
-        X -= X_STEP, Y = Y + (endXY.first < 0 ? 0.032 : -0.032))
-        this->push_back(std::make_pair(X, Y));
+	for (X = startXY.first, Y = startXY.second; X > endXY.first;
+		X -= X_STEP, Y = Y + (endXY.first < 0 ? 0.032 : -0.032))
+		this->push_back(std::make_pair(X, Y));
 
-    return;
+	return;
 }
 
 void headSide::Go(void) {
-    for (std::list<pair<float, float>>::iterator it = this->begin();
-        it != this->end(); ++it)
-        this->pOut(it->first, it->second);
+	for (std::list<pair<float, float>>::iterator it = this->begin();
+		it != this->end(); ++it)
+		this->pOut(it->first, it->second);
 
-    return;
+	return;
 }
 
 void headSide::Return(void) {
-    this->reverse();
-    for (std::list<pair<float, float>>::iterator it = this->begin();
-        it != this->end(); ++it)
-        this->pOut(it->first, it->second);
-    this->reverse();
+	this->reverse();
+	for (std::list<pair<float, float>>::iterator it = this->begin();
+		it != this->end(); ++it)
+		this->pOut(it->first, it->second);
+	this->reverse();
 
-    return;
+	return;
 }
 
 void headSide::ShiftY(float pad) {
-    for (std::list<pair<float, float>>::iterator it = this->begin();
-        it != this->end(); ++it)
-        it->second += pad;
+	for (std::list<pair<float, float>>::iterator it = this->begin();
+		it != this->end(); ++it)
+		it->second += pad;
 
-    return;
+	return;
 }
 
 void
 init_marlin(HANDLE hPipe)
 {
-    char buf[255];
+	char buf[255];
 
-    ZeroMemory(buf, 255);
+	ZeroMemory(buf, 255);
 	WritePipe(hPipe, "G90\n");
-	
-    ZeroMemory(buf, 255);
-    sprintf(buf, "G1 F%s Z%.3f\n", F_WHOLE, Z);
-    WritePipe(hPipe, buf);
 
-    ZeroMemory(buf, 255);
-    sprintf(buf, "M106 S%s\n", heatTemp);
-    WritePipe(hPipe, buf);
+	ZeroMemory(buf, 255);
+	sprintf(buf, "G1 F%s Z%.3f\n", F_WHOLE, Z);
+	WritePipe(hPipe, buf);
 
-    ZeroMemory(buf, 255);
-    sprintf(buf, "M109 S%s\n", heatTemp);
-    WritePipe(hPipe, buf);
+	ZeroMemory(buf, 255);
+	sprintf(buf, "M106 S%s\n", heatTemp);
+	WritePipe(hPipe, buf);
 
-    return;
+	ZeroMemory(buf, 255);
+	sprintf(buf, "M109 S%s\n", heatTemp);
+	WritePipe(hPipe, buf);
+
+	return;
 }
 
 void marlin_end(HANDLE hPipe)
 {
-    WritePipe(hPipe, "G92 E0.0\n");
+	WritePipe(hPipe, "G92 E0.0\n");
 	WritePipe(hPipe, "G28\n");
 	WritePipe(hPipe, "M106 S0\n");
 	WritePipe(hPipe, "M109 S0\n");
@@ -261,7 +261,7 @@ void marlin_end(HANDLE hPipe)
 }
 
 int
-WritePipe(HANDLE hPipe, CHAR *buffer)
+WritePipe(HANDLE hPipe, CHAR* buffer)
 {
 	DWORD read;
 	DWORD written;
@@ -269,11 +269,11 @@ WritePipe(HANDLE hPipe, CHAR *buffer)
 
 
 	WriteFile(hPipe, buffer, strlen(buffer), &written, NULL);
-	
+
 	ZeroMemory(EOT, 2);
 
 
-	while(!ReadFile(hPipe, EOT, 1, &read, NULL) || read != 1);
+	while (!ReadFile(hPipe, EOT, 1, &read, NULL) || read != 1);
 
 	if (EOT[0] != '-')
 		return -1;
@@ -283,57 +283,57 @@ WritePipe(HANDLE hPipe, CHAR *buffer)
 
 class Clips : public std::list<pair<float, float>> {
 private:
-  void pOut(float x, float y) {
-    char chBuf[255];
+	void pOut(float x, float y) {
+		char chBuf[255];
 
-    E += STEP_E2;
-    sprintf(chBuf, "G1 F%s E%.3f X%.3f Y%.3f\n", F_WHOLE, E, x, y);
-    WritePipe(hPipe, chBuf);
-    // printf("G1 F%hu X%.3f Y%.3f\n", F_WHOLE, x, y);
+		E += STEP_E2;
+		sprintf(chBuf, "G1 F%s E%.3f X%.3f Y%.3f\n", F_WHOLE, E, x, y);
+		WritePipe(hPipe, chBuf);
+		// printf("G1 F%hu X%.3f Y%.3f\n", F_WHOLE, x, y);
 
-    return;
-  }
+		return;
+	}
 
 public:
-  void New(std::pair<float, float> startXY, std::pair<float, float> endXY);
-  void Go(void);
-  void Return(void);
-  void ShiftX(float pad);
+	void New(std::pair<float, float> startXY, std::pair<float, float> endXY);
+	void Go(void);
+	void Return(void);
+	void ShiftX(float pad);
 };
 
 void Clips::New(std::pair<float, float> startXY,
-		   std::pair<float, float> endXY) {
-    float X, Y;
+	std::pair<float, float> endXY) {
+	float X, Y;
 
-  for (X = startXY.first, Y = startXY.second; Y < endXY.second;
-       Y += Y_STEP)
-    this->push_back(std::make_pair(X, Y));
+	for (X = startXY.first, Y = startXY.second; Y < endXY.second;
+		Y += Y_STEP)
+		this->push_back(std::make_pair(X, Y));
 
 	return;
 }
 
 void Clips::Go(void) {
-  for (std::list<pair<float, float>>::iterator it = this->begin();
-       it != this->end(); ++it)
-    this->pOut(it->first, it->second);
+	for (std::list<pair<float, float>>::iterator it = this->begin();
+		it != this->end(); ++it)
+		this->pOut(it->first, it->second);
 
-  return;
+	return;
 }
 
 void Clips::Return(void) {
-  this->reverse();
-  for (std::list<pair<float, float>>::iterator it = this->begin();
-       it != this->end(); ++it)
-    this->pOut(it->first, it->second);
-  this->reverse();
+	this->reverse();
+	for (std::list<pair<float, float>>::iterator it = this->begin();
+		it != this->end(); ++it)
+		this->pOut(it->first, it->second);
+	this->reverse();
 
-  return;
+	return;
 }
 
 void Clips::ShiftX(float pad) {
-  for (std::list<pair<float, float>>::iterator it = this->begin();
-       it != this->end(); ++it)
-    it->first += pad;
+	for (std::list<pair<float, float>>::iterator it = this->begin();
+		it != this->end(); ++it)
+		it->first += pad;
 }
 
 int* funcThreadGenGCODE(LPVOID lpParameter)
@@ -342,7 +342,7 @@ int* funcThreadGenGCODE(LPVOID lpParameter)
 	DWORD read;
 	DWORD err;
 	CHAR pipeBuffer[255];
-    double X, XDEST, Y;
+	double X, XDEST, Y;
 	double X_END_RIGHT;
 	double X_END_LEFT;
 	int flag;
@@ -352,1078 +352,1080 @@ int* funcThreadGenGCODE(LPVOID lpParameter)
 	Branch branch, subBranch, remainBranch, left2right, BaseLeft2Right, right2zero, back2front, headEdge;
 	headSide sideRight, sideLeft, subSideLeft0, subSideLeft1, subSideLeft2, subSideLeft3;
 	headSide edgeSideLeft0, edgeSideLeft1, edgeSideRight0, edgeSideRight1;
-      Clips clipsLeft, clipsRight;
+	Clips clipsLeft, clipsRight;
 
 
-    BaseLeft2Right.New2(X_START - 1, (float)abs(X_START - 1));
-    left2right.New2(X_START, (float)abs(X_START));
-    right2zero.New((float)abs(X_START), 0.000);
-    back2front.New(Y_START, Y_EDGE);
+	BaseLeft2Right.New2(X_START - 1, (float)abs(X_START - 1));
+	left2right.New2(X_START, (float)abs(X_START));
+	right2zero.New((float)abs(X_START), 0.000);
+	back2front.New(Y_START, Y_EDGE);
 
-    branch.New(Y_START, Y_END);
-    subBranch.New(Y_START, Y_END + 4.000);
-    remainBranch.New(Y_END + 4.000, Y_END);
+	branch.New(Y_START, Y_END);
+	subBranch.New(Y_START, Y_END + 4.000);
+	remainBranch.New(Y_END + 4.000, Y_END);
 
 
-    sideLeft.New(std::make_pair((float)X_START, (float)Y_END),
-        std::make_pair((float)0.0, (float)Y_EDGE));
+	sideLeft.New(std::make_pair((float)X_START, (float)Y_END),
+		std::make_pair((float)0.0, (float)Y_EDGE));
 
-    sideRight.New(std::make_pair((float)0.0, (float)(Y_EDGE)),
-        std::make_pair((float)abs(X_START), (float)Y_END));
+	sideRight.New(std::make_pair((float)0.0, (float)(Y_EDGE)),
+		std::make_pair((float)abs(X_START), (float)Y_END));
 
-    subSideLeft0.New(
-        std::make_pair((float)X_START, (float)(Y_END + 4.000)),
-        std::make_pair((float)(X_START + 16.0), (float)(Y_EDGE - 11.000)));
+	subSideLeft0.New(
+		std::make_pair((float)X_START, (float)(Y_END + 4.000)),
+		std::make_pair((float)(X_START + 16.0), (float)(Y_EDGE - 11.000)));
 
-    subSideLeft1.New(
-        std::make_pair((float)X_START, (float)(Y_END)),
-        std::make_pair((float)(X_START + 16.0), (float)(Y_EDGE - 11.000)));
+	subSideLeft1.New(
+		std::make_pair((float)X_START, (float)(Y_END)),
+		std::make_pair((float)(X_START + 16.0), (float)(Y_EDGE - 11.000)));
 
-    subSideLeft2.New2(
-        std::make_pair((float)abs(X_START), (float)(Y_END+4.000)),
-        std::make_pair((float)((float)abs(X_START) - 16.0), (float)(Y_EDGE - 11.000)));
+	subSideLeft2.New2(
+		std::make_pair((float)abs(X_START), (float)(Y_END + 4.000)),
+		std::make_pair((float)((float)abs(X_START) - 16.0), (float)(Y_EDGE - 11.000)));
 
-    subSideLeft3.New2(
-        std::make_pair((float)abs(X_START), (float)(Y_END)),
-        std::make_pair((float)((float)abs(X_START) - 16.0), (float)(Y_EDGE - 11.000)));
+	subSideLeft3.New2(
+		std::make_pair((float)abs(X_START), (float)(Y_END)),
+		std::make_pair((float)((float)abs(X_START) - 16.0), (float)(Y_EDGE - 11.000)));
 
-    edgeSideLeft0.New2(std::make_pair((float)0.0, (float)(Y_EDGE)),
-        std::make_pair((float)(-10.0), (float)(Y_EDGE - 11.000)));
+	edgeSideLeft0.New2(std::make_pair((float)0.0, (float)(Y_EDGE)),
+		std::make_pair((float)(-10.0), (float)(Y_EDGE - 11.000)));
 
-    edgeSideLeft1.New2(std::make_pair((float)0.0, (float)(Y_EDGE + 4.000)),
-        std::make_pair((float)(-10.0), (float)(Y_EDGE - 11.000)));
+	edgeSideLeft1.New2(std::make_pair((float)0.0, (float)(Y_EDGE + 4.000)),
+		std::make_pair((float)(-10.0), (float)(Y_EDGE - 11.000)));
 
-    edgeSideRight0.New(std::make_pair((float)(0.0), (float)(Y_EDGE + 4.000)),
-        std::make_pair((float)(10.0), (float)(Y_EDGE - 11.000)));
+	edgeSideRight0.New(std::make_pair((float)(0.0), (float)(Y_EDGE + 4.000)),
+		std::make_pair((float)(10.0), (float)(Y_EDGE - 11.000)));
 
-    edgeSideRight1.New(std::make_pair((float)(0.0), (float)(Y_EDGE)),
-        std::make_pair((float)(10.0), (float)(Y_EDGE - 11.000)));
+	edgeSideRight1.New(std::make_pair((float)(0.0), (float)(Y_EDGE)),
+		std::make_pair((float)(10.0), (float)(Y_EDGE - 11.000)));
 
-    headEdge.New2(Y_EDGE, Y_EDGE + 4.000);
+	headEdge.New2(Y_EDGE, Y_EDGE + 4.000);
 
-      clipsLeft.New(std::make_pair((float) -90.00, (float) -35.00),
-	  	std::make_pair((float) -90.00, (float) 32.00));
+	clipsLeft.New(std::make_pair((float)-90.00, (float)-35.00),
+		std::make_pair((float)-90.00, (float)32.00));
 
-  clipsRight.New(std::make_pair((float) 90.00, (float) -35.00),
-	  	 std::make_pair((float) 90.00, (float) 32.00));
+	clipsRight.New(std::make_pair((float)90.00, (float)-35.00),
+		std::make_pair((float)90.00, (float)32.00));
 
-    Z = Z_START[0] == '-' ? -(atof(&Z_START[1])) : atof(Z_START);
+	Z = Z_START[0] == '-' ? -(atof(&Z_START[1])) : atof(Z_START);
 
 	hPipe = CreateFile("\\\\.\\pipe\\pipe_visor",
-					   GENERIC_READ | GENERIC_WRITE,
-					   0,
-					   NULL,
-					   OPEN_EXISTING,
-					   0,
-					   NULL);
-	
+		GENERIC_READ | GENERIC_WRITE,
+		0,
+		NULL,
+		OPEN_EXISTING,
+		0,
+		NULL);
+
 	if (hPipe == INVALID_HANDLE_VALUE) {
 		printf("Cannot open pipe.\n");
 		return (int*)-1;
-	}	
-
-    Z = Z_START[0] == '-' ? -(atof(&Z_START[1])) : atof(Z_START);
-    
-    stamp();
-    
-    /* Init marlin abs_pos */
-    init_marlin(hPipe);
-
- for (layer = 0, padX = 0.76; layer < 2; ++layer) {
-    clipsLeft.Go();
-    clipsLeft.ShiftX(padX);
-    clipsLeft.Return();
-    clipsLeft.ShiftX(padX);
-    clipsLeft.Go();
-    clipsLeft.ShiftX(padX);
-    clipsLeft.Return();
-    clipsLeft.ShiftX(padX);
-    clipsLeft.Go();
-    clipsLeft.ShiftX(padX);
-    clipsLeft.Return();
-    clipsLeft.ShiftX(padX);
-    if (padX <= 0.9 && padX >= 0.7)
-      padX = -0.76;
-    else
-      padX = 0.76;
-    clipsLeft.ShiftX(padX);
-
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
-
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
-
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
-
-    Z += Z_STEP / 2;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
-
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
-
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);  }
-
-  padX = 0.76;
-  clipsLeft.ShiftX(padX);
-
-  for (layer = 0, padX = 0.76; layer < 4; ++layer) {
-
-    clipsLeft.Go();
-    clipsLeft.ShiftX(padX);
-    clipsLeft.Return();
-    clipsLeft.ShiftX(padX);
-    clipsLeft.Go();
-    clipsLeft.ShiftX(padX);
-    clipsLeft.Return();
-    clipsLeft.ShiftX(padX);
-    if (padX <= 0.9 && padX >= 0.7)
-      padX = -0.76;
-    else
-      padX = 0.76;
-
-    clipsLeft.ShiftX(padX);
-
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
-
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
-
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
-
-    Z += Z_STEP / 2;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
-
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
-
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
-}
-
-
-  E -= 1.000;
-  sprintf(chBuf, "G1 E%.3f\n", E);
-    WritePipe(hPipe, chBuf);
-
-    Z = Z_START[0] == '-' ? -(atof(&Z_START[1])) : atof(Z_START);
-
-  sprintf(chBuf, "G1 F%s X%.3f Y%.3f Z%.3f\n", F_WHOLE, (float)90.00, (float)-35.00, Z);
-    WritePipe(hPipe, chBuf);
-
-  E += 0.900;
-
-  for (layer = 0, padX = 0.76; layer < 2; ++layer) {
-    clipsRight.Go();
-    clipsRight.ShiftX(padX);
-    clipsRight.Return();
-    clipsRight.ShiftX(padX);
-    clipsRight.Go();
-    clipsRight.ShiftX(padX);
-    clipsRight.Return();
-    clipsRight.ShiftX(padX);
-    clipsRight.Go();
-    clipsRight.ShiftX(padX);
-    clipsRight.Return();
-    clipsRight.ShiftX(padX);
-    if (padX <= 0.9 && padX >= 0.7)
-      padX = -0.76;
-    else
-      padX = 0.76;
-    clipsRight.ShiftX(padX);
-
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
-
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
-
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
-
-    Z += Z_STEP / 2;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
-
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
-
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
-  }
-
-  padX = 0.76;
-  clipsRight.ShiftX(padX);
-
-  for (layer = 0, padX = 0.76; layer < 4; ++layer) {
-
-    clipsRight.Go();
-    clipsRight.ShiftX(padX);
-    clipsRight.Return();
-    clipsRight.ShiftX(padX);
-    clipsRight.Go();
-    clipsRight.ShiftX(padX);
-    clipsRight.Return();
-    clipsRight.ShiftX(padX);
-    if (padX <= 0.9 && padX >= 0.7)
-      padX = -0.76;
-    else
-      padX = 0.76;
-
-    clipsRight.ShiftX(padX);
-
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
-
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
-
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
-
-    Z += Z_STEP / 2;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
-
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
-
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);  }
-
-
-
-
-    E -= 0.450;
-    sprintf(chBuf, "G1 E%.3f\n", E);
-    WritePipe(hPipe, chBuf);
-
-    Z = Z_START[0] == '-' ? -(atof(&Z_START[1])) : atof(Z_START);
-    ZeroMemory(chBuf, 255);
-    sprintf(chBuf, "G1 F%s X%.3f Y%.3f Z%.3f\n", F_WHOLE, X_START, Y_START, Z);
-    WritePipe(hPipe, chBuf);
-
-    E += 0.450;
-    
-    BaseLeft2Right.Go2();
-
-    Z += Z_STEP;
-    sprintf(chBuf, "G1 Z%.3f\n", Z);
-    WritePipe(hPipe, chBuf);
-
-    Z += Z_STEP;
-    sprintf(chBuf, "G1 Z%.3f\n", Z);
-    WritePipe(hPipe, chBuf);
-
-    BaseLeft2Right.Return2();
-    
-    Z += Z_STEP;
-    sprintf(chBuf, "G1 Z%.3f\n", Z);
-    WritePipe(hPipe, chBuf);
-
-    Z += Z_STEP;
-    sprintf(chBuf, "G1 Z%.3f\n", Z);
-    WritePipe(hPipe, chBuf);
-
-    BaseLeft2Right.Go2();
-    
-    Z += Z_STEP;
-    sprintf(chBuf, "G1 Z%.3f\n", Z);
-    WritePipe(hPipe, chBuf);
+	}
+
+	Z = Z_START[0] == '-' ? -(atof(&Z_START[1])) : atof(Z_START);
+
+	stamp();
+
+	/* Init marlin abs_pos */
+	init_marlin(hPipe);
+
+	for (layer = 0, padX = 0.76; layer < 2; ++layer) {
+		clipsLeft.Go();
+		clipsLeft.ShiftX(padX);
+		clipsLeft.Return();
+		clipsLeft.ShiftX(padX);
+		clipsLeft.Go();
+		clipsLeft.ShiftX(padX);
+		clipsLeft.Return();
+		clipsLeft.ShiftX(padX);
+		clipsLeft.Go();
+		clipsLeft.ShiftX(padX);
+		clipsLeft.Return();
+		clipsLeft.ShiftX(padX);
+		if (padX <= 0.9 && padX >= 0.7)
+			padX = -0.76;
+		else
+			padX = 0.76;
+		clipsLeft.ShiftX(padX);
+
+		Z += Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
+
+		Z += Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
+
+		Z += Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
+
+		Z += Z_STEP / 2;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
+
+		Z += Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
+
+		Z += Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
+	}
+
+	padX = 0.76;
+	clipsLeft.ShiftX(padX);
+
+	for (layer = 0, padX = 0.76; layer < 4; ++layer) {
+
+		clipsLeft.Go();
+		clipsLeft.ShiftX(padX);
+		clipsLeft.Return();
+		clipsLeft.ShiftX(padX);
+		clipsLeft.Go();
+		clipsLeft.ShiftX(padX);
+		clipsLeft.Return();
+		clipsLeft.ShiftX(padX);
+		if (padX <= 0.9 && padX >= 0.7)
+			padX = -0.76;
+		else
+			padX = 0.76;
+
+		clipsLeft.ShiftX(padX);
+
+		Z += Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
+
+		Z += Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
+
+		Z += Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
+
+		Z += Z_STEP / 2;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
+
+		Z += Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
+
+		Z += Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
+	}
+
+
+	E -= 1.000;
+	sprintf(chBuf, "G1 E%.3f\n", E);
+	WritePipe(hPipe, chBuf);
+
+	Z = Z_START[0] == '-' ? -(atof(&Z_START[1])) : atof(Z_START);
+
+	sprintf(chBuf, "G1 F%s X%.3f Y%.3f Z%.3f\n", F_WHOLE, (float)90.00, (float)-35.00, Z);
+	WritePipe(hPipe, chBuf);
+
+	E += 0.900;
+
+	for (layer = 0, padX = 0.76; layer < 2; ++layer) {
+		clipsRight.Go();
+		clipsRight.ShiftX(padX);
+		clipsRight.Return();
+		clipsRight.ShiftX(padX);
+		clipsRight.Go();
+		clipsRight.ShiftX(padX);
+		clipsRight.Return();
+		clipsRight.ShiftX(padX);
+		clipsRight.Go();
+		clipsRight.ShiftX(padX);
+		clipsRight.Return();
+		clipsRight.ShiftX(padX);
+		if (padX <= 0.9 && padX >= 0.7)
+			padX = -0.76;
+		else
+			padX = 0.76;
+		clipsRight.ShiftX(padX);
+
+		Z += Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
+
+		Z += Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
 
-    Z += Z_STEP;
-    sprintf(chBuf, "G1 Z%.3f\n", Z);
-    WritePipe(hPipe, chBuf);
+		Z += Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
 
-    BaseLeft2Right.Return2();
-    
-    Z -= Z_STEP;
-    sprintf(chBuf, "G1 Z%.3f\n", Z);
-    WritePipe(hPipe, chBuf);
+		Z += Z_STEP / 2;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
 
-    Z -= Z_STEP;
-    sprintf(chBuf, "G1 Z%.3f\n", Z);
-    WritePipe(hPipe, chBuf);
+		Z += Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
 
-    Z -= Z_STEP;
-    sprintf(chBuf, "G1 Z%.3f\n", Z);
-    WritePipe(hPipe, chBuf);
+		Z += Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
+	}
 
-    Z -= Z_STEP;
-    sprintf(chBuf, "G1 Z%.3f\n", Z);
-    WritePipe(hPipe, chBuf);
+	padX = 0.76;
+	clipsRight.ShiftX(padX);
 
-    Z -= Z_STEP;
-    sprintf(chBuf, "G1 Z%.3f\n", Z);
-    WritePipe(hPipe, chBuf);
+	for (layer = 0, padX = 0.76; layer < 4; ++layer) {
 
-    Z -= Z_STEP;
-    sprintf(chBuf, "G1 Z%.3f\n", Z);
-    WritePipe(hPipe, chBuf);
+		clipsRight.Go();
+		clipsRight.ShiftX(padX);
+		clipsRight.Return();
+		clipsRight.ShiftX(padX);
+		clipsRight.Go();
+		clipsRight.ShiftX(padX);
+		clipsRight.Return();
+		clipsRight.ShiftX(padX);
+		if (padX <= 0.9 && padX >= 0.7)
+			padX = -0.76;
+		else
+			padX = 0.76;
 
-    sprintf(chBuf, "G1 Y%.3f\n", Y_START - 0.80 * 1);
-    WritePipe(hPipe, chBuf);
+		clipsRight.ShiftX(padX);
 
-    BaseLeft2Right.Go2();
+		Z += Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
 
-    Z += Z_STEP;
-    sprintf(chBuf, "G1 Z%.3f\n", Z);
-    WritePipe(hPipe, chBuf);
+		Z += Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
 
-    Z += Z_STEP;
-    sprintf(chBuf, "G1 Z%.3f\n", Z);
-    WritePipe(hPipe, chBuf);
+		Z += Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
 
-    BaseLeft2Right.Return2();
+		Z += Z_STEP / 2;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
 
-    Z += Z_STEP;
-    sprintf(chBuf, "G1 Z%.3f\n", Z);
-    WritePipe(hPipe, chBuf);
+		Z += Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
 
-    Z += Z_STEP;
-    sprintf(chBuf, "G1 Z%.3f\n", Z);
-    WritePipe(hPipe, chBuf);
+		Z += Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
+	}
 
-    BaseLeft2Right.Go2();
 
-    Z += Z_STEP;
-    sprintf(chBuf, "G1 Z%.3f\n", Z);
-    WritePipe(hPipe, chBuf);
 
-    Z += Z_STEP;
-    sprintf(chBuf, "G1 Z%.3f\n", Z);
-    WritePipe(hPipe, chBuf);
 
-    BaseLeft2Right.Return2();
+	E -= 0.450;
+	sprintf(chBuf, "G1 E%.3f\n", E);
+	WritePipe(hPipe, chBuf);
 
-    Z -= Z_STEP;
-    sprintf(chBuf, "G1 Z%.3f\n", Z);
-    WritePipe(hPipe, chBuf);
+	Z = Z_START[0] == '-' ? -(atof(&Z_START[1])) : atof(Z_START);
+	ZeroMemory(chBuf, 255);
+	sprintf(chBuf, "G1 F%s X%.3f Y%.3f Z%.3f\n", F_WHOLE, X_START, Y_START, Z);
+	WritePipe(hPipe, chBuf);
 
-    Z -= Z_STEP;
-    sprintf(chBuf, "G1 Z%.3f\n", Z);
-    WritePipe(hPipe, chBuf);
+	E += 0.450;
 
-    Z -= Z_STEP;
-    sprintf(chBuf, "G1 Z%.3f\n", Z);
-    WritePipe(hPipe, chBuf);
+	BaseLeft2Right.Go2();
 
-    Z -= Z_STEP;
-    sprintf(chBuf, "G1 Z%.3f\n", Z);
-    WritePipe(hPipe, chBuf);
+	Z += Z_STEP;
+	sprintf(chBuf, "G1 Z%.3f\n", Z);
+	WritePipe(hPipe, chBuf);
 
-    Z -= Z_STEP;
-    sprintf(chBuf, "G1 Z%.3f\n", Z);
-    WritePipe(hPipe, chBuf);
+	Z += Z_STEP;
+	sprintf(chBuf, "G1 Z%.3f\n", Z);
+	WritePipe(hPipe, chBuf);
 
-    Z -= Z_STEP;
-    sprintf(chBuf, "G1 Z%.3f\n", Z);
-    WritePipe(hPipe, chBuf);
+	BaseLeft2Right.Return2();
 
-    sprintf(chBuf, "G1 Y%.3f\n", Y_START - 0.80 * 2);
-    WritePipe(hPipe, chBuf);
-    // ##
+	Z += Z_STEP;
+	sprintf(chBuf, "G1 Z%.3f\n", Z);
+	WritePipe(hPipe, chBuf);
 
-    BaseLeft2Right.Go2();
+	Z += Z_STEP;
+	sprintf(chBuf, "G1 Z%.3f\n", Z);
+	WritePipe(hPipe, chBuf);
 
-    Z += Z_STEP;
-    sprintf(chBuf, "G1 Z%.3f\n", Z);
-    WritePipe(hPipe, chBuf);
+	BaseLeft2Right.Go2();
 
-    Z += Z_STEP;
-    sprintf(chBuf, "G1 Z%.3f\n", Z);
-    WritePipe(hPipe, chBuf);
+	Z += Z_STEP;
+	sprintf(chBuf, "G1 Z%.3f\n", Z);
+	WritePipe(hPipe, chBuf);
 
-    BaseLeft2Right.Return2();
+	Z += Z_STEP;
+	sprintf(chBuf, "G1 Z%.3f\n", Z);
+	WritePipe(hPipe, chBuf);
 
-    Z += Z_STEP;
-    sprintf(chBuf, "G1 Z%.3f\n", Z);
-    WritePipe(hPipe, chBuf);
+	BaseLeft2Right.Return2();
 
-    Z += Z_STEP;
-    sprintf(chBuf, "G1 Z%.3f\n", Z);
-    WritePipe(hPipe, chBuf);
+	Z -= Z_STEP;
+	sprintf(chBuf, "G1 Z%.3f\n", Z);
+	WritePipe(hPipe, chBuf);
 
-    BaseLeft2Right.Go2();
+	Z -= Z_STEP;
+	sprintf(chBuf, "G1 Z%.3f\n", Z);
+	WritePipe(hPipe, chBuf);
 
-    Z += Z_STEP;
-    sprintf(chBuf, "G1 Z%.3f\n", Z);
-    WritePipe(hPipe, chBuf);
+	Z -= Z_STEP;
+	sprintf(chBuf, "G1 Z%.3f\n", Z);
+	WritePipe(hPipe, chBuf);
 
-    Z += Z_STEP;
-    sprintf(chBuf, "G1 Z%.3f\n", Z);
-    WritePipe(hPipe, chBuf);
+	Z -= Z_STEP;
+	sprintf(chBuf, "G1 Z%.3f\n", Z);
+	WritePipe(hPipe, chBuf);
 
-    BaseLeft2Right.Return2();
+	Z -= Z_STEP;
+	sprintf(chBuf, "G1 Z%.3f\n", Z);
+	WritePipe(hPipe, chBuf);
 
-    Z -= Z_STEP;
-    sprintf(chBuf, "G1 Z%.3f\n", Z);
-    WritePipe(hPipe, chBuf);
+	Z -= Z_STEP;
+	sprintf(chBuf, "G1 Z%.3f\n", Z);
+	WritePipe(hPipe, chBuf);
 
-    Z -= Z_STEP;
-    sprintf(chBuf, "G1 Z%.3f\n", Z);
-    WritePipe(hPipe, chBuf);
+	sprintf(chBuf, "G1 Y%.3f\n", Y_START - 0.80 * 1);
+	WritePipe(hPipe, chBuf);
 
-    Z -= Z_STEP;
-    sprintf(chBuf, "G1 Z%.3f\n", Z);
-    WritePipe(hPipe, chBuf);
+	BaseLeft2Right.Go2();
 
-    Z -= Z_STEP;
-    sprintf(chBuf, "G1 Z%.3f\n", Z);
-    WritePipe(hPipe, chBuf);
+	Z += Z_STEP;
+	sprintf(chBuf, "G1 Z%.3f\n", Z);
+	WritePipe(hPipe, chBuf);
 
-    Z -= Z_STEP;
-    sprintf(chBuf, "G1 Z%.3f\n", Z);
-    WritePipe(hPipe, chBuf);
+	Z += Z_STEP;
+	sprintf(chBuf, "G1 Z%.3f\n", Z);
+	WritePipe(hPipe, chBuf);
 
-    Z -= Z_STEP;
-    sprintf(chBuf, "G1 Z%.3f\n", Z);
-    WritePipe(hPipe, chBuf);
+	BaseLeft2Right.Return2();
 
-    sprintf(chBuf, "G1 Y%.3f\n", Y_START - 0.80 * 3);
-    WritePipe(hPipe, chBuf);
+	Z += Z_STEP;
+	sprintf(chBuf, "G1 Z%.3f\n", Z);
+	WritePipe(hPipe, chBuf);
 
-    BaseLeft2Right.Go2();
+	Z += Z_STEP;
+	sprintf(chBuf, "G1 Z%.3f\n", Z);
+	WritePipe(hPipe, chBuf);
 
-    Z += Z_STEP;
-    sprintf(chBuf, "G1 Z%.3f\n", Z);
-    WritePipe(hPipe, chBuf);
+	BaseLeft2Right.Go2();
 
-    Z += Z_STEP;
-    sprintf(chBuf, "G1 Z%.3f\n", Z);
-    WritePipe(hPipe, chBuf);
+	Z += Z_STEP;
+	sprintf(chBuf, "G1 Z%.3f\n", Z);
+	WritePipe(hPipe, chBuf);
 
-    BaseLeft2Right.Return2();
+	Z += Z_STEP;
+	sprintf(chBuf, "G1 Z%.3f\n", Z);
+	WritePipe(hPipe, chBuf);
 
-    Z += Z_STEP;
-    sprintf(chBuf, "G1 Z%.3f\n", Z);
-    WritePipe(hPipe, chBuf);
+	BaseLeft2Right.Return2();
 
-    Z += Z_STEP;
-    sprintf(chBuf, "G1 Z%.3f\n", Z);
-    WritePipe(hPipe, chBuf);
+	Z -= Z_STEP;
+	sprintf(chBuf, "G1 Z%.3f\n", Z);
+	WritePipe(hPipe, chBuf);
 
-    BaseLeft2Right.Go2();
+	Z -= Z_STEP;
+	sprintf(chBuf, "G1 Z%.3f\n", Z);
+	WritePipe(hPipe, chBuf);
 
-    Z += Z_STEP;
-    sprintf(chBuf, "G1 Z%.3f\n", Z);
-    WritePipe(hPipe, chBuf);
+	Z -= Z_STEP;
+	sprintf(chBuf, "G1 Z%.3f\n", Z);
+	WritePipe(hPipe, chBuf);
 
-    Z += Z_STEP;
-    sprintf(chBuf, "G1 Z%.3f\n", Z);
-    WritePipe(hPipe, chBuf);
+	Z -= Z_STEP;
+	sprintf(chBuf, "G1 Z%.3f\n", Z);
+	WritePipe(hPipe, chBuf);
 
-    BaseLeft2Right.Return2();
+	Z -= Z_STEP;
+	sprintf(chBuf, "G1 Z%.3f\n", Z);
+	WritePipe(hPipe, chBuf);
 
-    Z -= Z_STEP;
-    sprintf(chBuf, "G1 Z%.3f\n", Z);
-    WritePipe(hPipe, chBuf);
+	Z -= Z_STEP;
+	sprintf(chBuf, "G1 Z%.3f\n", Z);
+	WritePipe(hPipe, chBuf);
 
-    Z -= Z_STEP;
-    sprintf(chBuf, "G1 Z%.3f\n", Z);
-    WritePipe(hPipe, chBuf);
+	sprintf(chBuf, "G1 Y%.3f\n", Y_START - 0.80 * 2);
+	WritePipe(hPipe, chBuf);
+	// ##
 
-    Z -= Z_STEP;
-    sprintf(chBuf, "G1 Z%.3f\n", Z);
-    WritePipe(hPipe, chBuf);
+	BaseLeft2Right.Go2();
 
-    Z -= Z_STEP;
-    sprintf(chBuf, "G1 Z%.3f\n", Z);
-    WritePipe(hPipe, chBuf);
+	Z += Z_STEP;
+	sprintf(chBuf, "G1 Z%.3f\n", Z);
+	WritePipe(hPipe, chBuf);
 
-    Z -= Z_STEP;
-    sprintf(chBuf, "G1 Z%.3f\n", Z);
-    WritePipe(hPipe, chBuf);
+	Z += Z_STEP;
+	sprintf(chBuf, "G1 Z%.3f\n", Z);
+	WritePipe(hPipe, chBuf);
 
-    Z -= Z_STEP;
-    sprintf(chBuf, "G1 Z%.3f\n", Z);
-    WritePipe(hPipe, chBuf);
+	BaseLeft2Right.Return2();
 
-    sprintf(chBuf, "G1 Y%.3f\n", Y_START - 0.80 * 4);
-    WritePipe(hPipe, chBuf);
+	Z += Z_STEP;
+	sprintf(chBuf, "G1 Z%.3f\n", Z);
+	WritePipe(hPipe, chBuf);
 
-    BaseLeft2Right.Go2();
+	Z += Z_STEP;
+	sprintf(chBuf, "G1 Z%.3f\n", Z);
+	WritePipe(hPipe, chBuf);
 
-    Z += Z_STEP;
-    sprintf(chBuf, "G1 Z%.3f\n", Z);
-    WritePipe(hPipe, chBuf);
+	BaseLeft2Right.Go2();
 
-    Z += Z_STEP;
-    sprintf(chBuf, "G1 Z%.3f\n", Z);
-    WritePipe(hPipe, chBuf);
+	Z += Z_STEP;
+	sprintf(chBuf, "G1 Z%.3f\n", Z);
+	WritePipe(hPipe, chBuf);
 
-    BaseLeft2Right.Return2();
+	Z += Z_STEP;
+	sprintf(chBuf, "G1 Z%.3f\n", Z);
+	WritePipe(hPipe, chBuf);
 
-    Z += Z_STEP;
-    sprintf(chBuf, "G1 Z%.3f\n", Z);
-    WritePipe(hPipe, chBuf);
+	BaseLeft2Right.Return2();
 
-    Z += Z_STEP;
-    sprintf(chBuf, "G1 Z%.3f\n", Z);
-    WritePipe(hPipe, chBuf);
+	Z -= Z_STEP;
+	sprintf(chBuf, "G1 Z%.3f\n", Z);
+	WritePipe(hPipe, chBuf);
 
-    BaseLeft2Right.Go2();
+	Z -= Z_STEP;
+	sprintf(chBuf, "G1 Z%.3f\n", Z);
+	WritePipe(hPipe, chBuf);
 
-    Z += Z_STEP;
-    sprintf(chBuf, "G1 Z%.3f\n", Z);
-    WritePipe(hPipe, chBuf);
+	Z -= Z_STEP;
+	sprintf(chBuf, "G1 Z%.3f\n", Z);
+	WritePipe(hPipe, chBuf);
 
-    Z += Z_STEP;
-    sprintf(chBuf, "G1 Z%.3f\n", Z);
-    WritePipe(hPipe, chBuf);
+	Z -= Z_STEP;
+	sprintf(chBuf, "G1 Z%.3f\n", Z);
+	WritePipe(hPipe, chBuf);
 
-    BaseLeft2Right.Return2();
+	Z -= Z_STEP;
+	sprintf(chBuf, "G1 Z%.3f\n", Z);
+	WritePipe(hPipe, chBuf);
 
-    Z = Z_START[0] == '-' ? -(atof(&Z_START[1])) : atof(Z_START);
-    ZeroMemory(chBuf, 255);
-    sprintf(chBuf, "G1 F%s X%.3f Y%.3f Z%.3f\n", F_WHOLE, X_START, Y_START, Z);
-    WritePipe(hPipe, chBuf);
+	Z -= Z_STEP;
+	sprintf(chBuf, "G1 Z%.3f\n", Z);
+	WritePipe(hPipe, chBuf);
 
-    for (layer = 0, padY = 1; layer < LAYER_BRANCH / 10; ++layer) {
+	sprintf(chBuf, "G1 Y%.3f\n", Y_START - 0.80 * 3);
+	WritePipe(hPipe, chBuf);
 
-        branch.Go();
-        sideLeft.Go();
-        sideRight.Go();
+	BaseLeft2Right.Go2();
 
-        sideRight.ShiftY(padY);
-        sideLeft.ShiftY(padY);
+	Z += Z_STEP;
+	sprintf(chBuf, "G1 Z%.3f\n", Z);
+	WritePipe(hPipe, chBuf);
 
-        sideRight.Return();
-        sideLeft.Return();
+	Z += Z_STEP;
+	sprintf(chBuf, "G1 Z%.3f\n", Z);
+	WritePipe(hPipe, chBuf);
 
-        sideRight.ShiftY(padY);
-        sideLeft.ShiftY(padY);
+	BaseLeft2Right.Return2();
 
-        sideLeft.Go();
-        sideRight.Go();
+	Z += Z_STEP;
+	sprintf(chBuf, "G1 Z%.3f\n", Z);
+	WritePipe(hPipe, chBuf);
 
-        sideRight.ShiftY(padY);
-        sideLeft.ShiftY(padY);
+	Z += Z_STEP;
+	sprintf(chBuf, "G1 Z%.3f\n", Z);
+	WritePipe(hPipe, chBuf);
 
-        sideRight.Return();
-        sideLeft.Return();
+	BaseLeft2Right.Go2();
 
-        sideRight.ShiftY(padY);
-        sideLeft.ShiftY(padY);
+	Z += Z_STEP;
+	sprintf(chBuf, "G1 Z%.3f\n", Z);
+	WritePipe(hPipe, chBuf);
 
-        sideLeft.Go();
-        sideRight.Go();
+	Z += Z_STEP;
+	sprintf(chBuf, "G1 Z%.3f\n", Z);
+	WritePipe(hPipe, chBuf);
 
-        branch.Return();
-        branch.Go();
+	BaseLeft2Right.Return2();
 
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
+	Z -= Z_STEP;
+	sprintf(chBuf, "G1 Z%.3f\n", Z);
+	WritePipe(hPipe, chBuf);
 
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
+	Z -= Z_STEP;
+	sprintf(chBuf, "G1 Z%.3f\n", Z);
+	WritePipe(hPipe, chBuf);
 
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
+	Z -= Z_STEP;
+	sprintf(chBuf, "G1 Z%.3f\n", Z);
+	WritePipe(hPipe, chBuf);
 
-        Z += Z_STEP / 2;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
+	Z -= Z_STEP;
+	sprintf(chBuf, "G1 Z%.3f\n", Z);
+	WritePipe(hPipe, chBuf);
 
-        padY = -1;
+	Z -= Z_STEP;
+	sprintf(chBuf, "G1 Z%.3f\n", Z);
+	WritePipe(hPipe, chBuf);
 
-        sideRight.Return();
-        sideLeft.Return();
+	Z -= Z_STEP;
+	sprintf(chBuf, "G1 Z%.3f\n", Z);
+	WritePipe(hPipe, chBuf);
 
-        sideRight.ShiftY(padY);
-        sideLeft.ShiftY(padY);
+	sprintf(chBuf, "G1 Y%.3f\n", Y_START - 0.80 * 4);
+	WritePipe(hPipe, chBuf);
 
-        sideLeft.Go();
-        sideRight.Go();
+	BaseLeft2Right.Go2();
 
-        sideRight.ShiftY(padY);
-        sideLeft.ShiftY(padY);
+	Z += Z_STEP;
+	sprintf(chBuf, "G1 Z%.3f\n", Z);
+	WritePipe(hPipe, chBuf);
 
-        sideRight.Return();
-        sideLeft.Return();
+	Z += Z_STEP;
+	sprintf(chBuf, "G1 Z%.3f\n", Z);
+	WritePipe(hPipe, chBuf);
 
-        sideRight.ShiftY(padY);
-        sideLeft.ShiftY(padY);
+	BaseLeft2Right.Return2();
 
-        sideLeft.Go();
-        sideRight.Go();
+	Z += Z_STEP;
+	sprintf(chBuf, "G1 Z%.3f\n", Z);
+	WritePipe(hPipe, chBuf);
 
-        sideRight.ShiftY(padY);
-        sideLeft.ShiftY(padY);
+	Z += Z_STEP;
+	sprintf(chBuf, "G1 Z%.3f\n", Z);
+	WritePipe(hPipe, chBuf);
 
-        sideRight.Return();
-        sideLeft.Return();
+	BaseLeft2Right.Go2();
 
-        branch.Return();
+	Z += Z_STEP;
+	sprintf(chBuf, "G1 Z%.3f\n", Z);
+	WritePipe(hPipe, chBuf);
 
-        padY = 1;
+	Z += Z_STEP;
+	sprintf(chBuf, "G1 Z%.3f\n", Z);
+	WritePipe(hPipe, chBuf);
 
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
+	BaseLeft2Right.Return2();
 
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
+	Z = Z_START[0] == '-' ? -(atof(&Z_START[1])) : atof(Z_START);
+	ZeroMemory(chBuf, 255);
+	sprintf(chBuf, "G1 F%s X%.3f Y%.3f Z%.3f\n", F_WHOLE, X_START, Y_START, Z);
+	WritePipe(hPipe, chBuf);
 
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
+	for (layer = 0, padY = 1; layer < LAYER_BRANCH / 10; ++layer) {
 
-        Z += Z_STEP / 2;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
-    }
+		branch.Go();
+		sideLeft.Go();
+		sideRight.Go();
 
-    for (layer = LAYER_BRANCH - (LAYER_BRANCH / 10); --layer;) {
-        branch.Go();
-        subSideLeft1.Go();
-        subSideLeft1.Return();
-        remainBranch.Return();
-        subSideLeft0.Go();
-        subSideLeft0.Return();
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
+		sideRight.ShiftY(padY);
+		sideLeft.ShiftY(padY);
 
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
+		sideRight.Return();
+		sideLeft.Return();
 
-        subBranch.Return();
-        
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
+		sideRight.ShiftY(padY);
+		sideLeft.ShiftY(padY);
 
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
+		sideLeft.Go();
+		sideRight.Go();
 
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
+		sideRight.ShiftY(padY);
+		sideLeft.ShiftY(padY);
 
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
-    }
+		sideRight.Return();
+		sideLeft.Return();
 
+		sideRight.ShiftY(padY);
+		sideLeft.ShiftY(padY);
 
-    left2right.Go2(true);
+		sideLeft.Go();
+		sideRight.Go();
 
-    for (layer = LAYER_BRANCH - (LAYER_BRANCH / 10); --layer;) {
-        Z -= Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
+		branch.Return();
+		branch.Go();
 
-        Z -= Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
+		Z += Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
 
-        Z -= Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
+		Z += Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
 
-        Z -= Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
+		Z += Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
 
-        Z -= Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
+		Z += Z_STEP / 2;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
 
-        Z -= Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
-    }
+		padY = -1;
 
-  E += 1.400;
-  sprintf(chBuf, "G1 E%.3f\n", E);
-    WritePipe(hPipe, chBuf);
+		sideRight.Return();
+		sideLeft.Return();
 
-  WritePipe(hPipe, "G4 S2\n");
+		sideRight.ShiftY(padY);
+		sideLeft.ShiftY(padY);
 
-  E += 1.400;
-    sprintf(chBuf, "G1 E%.3f\n", E);
-    WritePipe(hPipe, chBuf);
+		sideLeft.Go();
+		sideRight.Go();
 
-  E += STEP_E1 * 11;
+		sideRight.ShiftY(padY);
+		sideLeft.ShiftY(padY);
 
-    for (layer = LAYER_BRANCH - (LAYER_BRANCH / 10); --layer;) {
-        branch.Go();
-        subSideLeft3.Go();
-        subSideLeft3.Return();
-        remainBranch.Return();
-        subSideLeft2.Go();
-        subSideLeft2.Return();
+		sideRight.Return();
+		sideLeft.Return();
 
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
+		sideRight.ShiftY(padY);
+		sideLeft.ShiftY(padY);
 
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
+		sideLeft.Go();
+		sideRight.Go();
 
-        subBranch.Return();
+		sideRight.ShiftY(padY);
+		sideLeft.ShiftY(padY);
 
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
+		sideRight.Return();
+		sideLeft.Return();
 
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
+		branch.Return();
 
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
+		padY = 1;
 
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
-    }
+		Z += Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
 
-    E -= 0.450;
-    sprintf(chBuf, "G1 E%.3f\n", E);
-    WritePipe(hPipe, chBuf);
+		Z += Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
 
-    right2zero.Go2(true);
-    back2front.Go(true);
+		Z += Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
 
-    for (layer = LAYER_BRANCH - (LAYER_BRANCH / 9); --layer;) {
-        Z -= Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
+		Z += Z_STEP / 2;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
+	}
 
-        Z -= Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
+	for (layer = LAYER_BRANCH - (LAYER_BRANCH / 10); --layer;) {
+		branch.Go();
+		subSideLeft1.Go();
+		subSideLeft1.Return();
+		remainBranch.Return();
+		subSideLeft0.Go();
+		subSideLeft0.Return();
+		Z += Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
 
-        Z -= Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
+		Z += Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
 
-        Z -= Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
+		subBranch.Return();
 
-        Z -= Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
+		Z += Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
 
-        Z -= Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
-    }
+		Z += Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
 
-  E += 1.000;
-  sprintf(chBuf, "G1 E%.3f\n", E);
-  WritePipe(hPipe, chBuf);
+		Z += Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
 
-  WritePipe(hPipe, "G4 S2\n");
+		Z += Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
+	}
 
-  E += 1.000;
-  sprintf(chBuf, "G1 E%.3f\n", E);
-  WritePipe(hPipe, chBuf);
 
-  E += STEP_E1;
-  E += STEP_E1;
-  E += STEP_E1;
-  E += STEP_E1;
+	left2right.Go2(true);
 
-    layer = LAYER_BRANCH - (LAYER_BRANCH / 10);
-    layer--;
+	for (layer = LAYER_BRANCH - (LAYER_BRANCH / 10); --layer;) {
+		Z -= Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
 
-    do {
-        edgeSideLeft1.Go();
-        edgeSideLeft1.Return();
-        headEdge.Return();
-        edgeSideLeft0.Go();
-        edgeSideLeft0.Return();
+		Z -= Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
 
-        headEdge.Go();
+		Z -= Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
 
-        edgeSideRight0.Go();
-        edgeSideRight0.Return();
-        headEdge.Return();
-        edgeSideRight1.Go();
-        edgeSideRight1.Return();
+		Z -= Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
 
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
+		Z -= Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
 
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
+		Z -= Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
+	}
 
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
+	E += 1.400;
+	sprintf(chBuf, "G1 E%.3f\n", E);
+	WritePipe(hPipe, chBuf);
 
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
+	WritePipe(hPipe, "G4 S2\n");
 
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
+	E += 1.400;
+	sprintf(chBuf, "G1 E%.3f\n", E);
+	WritePipe(hPipe, chBuf);
 
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
-    } while (--layer);
+	E += STEP_E1 * 11;
 
+	for (layer = LAYER_BRANCH - (LAYER_BRANCH / 10); --layer;) {
+		branch.Go();
+		subSideLeft3.Go();
+		subSideLeft3.Return();
+		remainBranch.Return();
+		subSideLeft2.Go();
+		subSideLeft2.Return();
 
-    headEdge.Go();
-    Z += Z_STEP;
-    sprintf(chBuf, "G1 Z%.3f\n", Z);
-    WritePipe(hPipe, chBuf);
-    Z += Z_STEP;
-    sprintf(chBuf, "G1 Z%.3f\n", Z);
-    WritePipe(hPipe, chBuf);
-    Z += Z_STEP;
-    sprintf(chBuf, "G1 Z%.3f\n", Z);
-    WritePipe(hPipe, chBuf);
-    headEdge.Return();
+		Z += Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
 
-  E -= 1.000;
-  sprintf(chBuf, "G1 E%.3f\n", E);
-    WritePipe(hPipe, chBuf);
+		Z += Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
 
-  sprintf(chBuf, "G1 F%s X%.3f Y%.3f Z%.3f\n", F_WHOLE, X_START, Y_START, Z);
-      WritePipe(hPipe, chBuf);
+		subBranch.Return();
 
-  WritePipe(hPipe, "G4 S60\n");
+		Z += Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
 
-  E += 0.100;
-  sprintf(chBuf, "G1 E%.3f\n", E);
-      WritePipe(hPipe, chBuf);
+		Z += Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
 
-  E += STEP_E1 * 4;
+		Z += Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
 
-    for (layer = 6, padY = 0.76; --layer;) {
+		Z += Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
+	}
 
-        branch.Go();
-        sideLeft.Go();
-        sideRight.Go();
-        ;
-        sideRight.ShiftY(padY);
-        sideLeft.ShiftY(padY);
+	E -= 0.450;
+	sprintf(chBuf, "G1 E%.3f\n", E);
+	WritePipe(hPipe, chBuf);
 
-        sideRight.Return();
-        sideLeft.Return();
+	right2zero.Go2(true);
+	back2front.Go(true);
 
-        sideRight.ShiftY(padY);
-        sideLeft.ShiftY(padY);
+	for (layer = LAYER_BRANCH - (LAYER_BRANCH / 9); --layer;) {
+		Z -= Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
 
-        sideLeft.Go();
-        sideRight.Go();
+		Z -= Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
 
-        sideRight.ShiftY(padY);
-        sideLeft.ShiftY(padY);
+		Z -= Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
 
-        sideRight.Return();
-        sideLeft.Return();
+		Z -= Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
 
-        sideRight.ShiftY(padY);
-        sideLeft.ShiftY(padY);
+		Z -= Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
 
-        sideLeft.Go();
-        sideRight.Go();
+		Z -= Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
+	}
 
-        branch.Return();
-        branch.Go();
+	E += 1.000;
+	sprintf(chBuf, "G1 E%.3f\n", E);
+	WritePipe(hPipe, chBuf);
 
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
-        Z += Z_STEP / 2;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
+	WritePipe(hPipe, "G4 S2\n");
 
-        padY = -0.76;
+	E += 1.000;
+	sprintf(chBuf, "G1 E%.3f\n", E);
+	WritePipe(hPipe, chBuf);
 
-        sideRight.Return();
-        sideLeft.Return();
+	E += STEP_E1;
+	E += STEP_E1;
+	E += STEP_E1;
+	E += STEP_E1;
 
-        sideRight.ShiftY(padY);
-        sideLeft.ShiftY(padY);
+	layer = LAYER_BRANCH - (LAYER_BRANCH / 10);
+	layer--;
 
-        sideLeft.Go();
-        sideRight.Go();
+	do {
+		edgeSideLeft1.Go();
+		edgeSideLeft1.Return();
+		headEdge.Return();
+		edgeSideLeft0.Go();
+		edgeSideLeft0.Return();
 
-        sideRight.ShiftY(padY);
-        sideLeft.ShiftY(padY);
+		headEdge.Go();
 
-        sideRight.Return();
-        sideLeft.Return();
+		edgeSideRight0.Go();
+		edgeSideRight0.Return();
+		headEdge.Return();
+		edgeSideRight1.Go();
+		edgeSideRight1.Return();
 
-        sideRight.ShiftY(padY);
-        sideLeft.ShiftY(padY);
+		Z += Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
 
-        sideLeft.Go();
-        sideRight.Go();
+		Z += Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
 
-        sideRight.ShiftY(padY);
-        sideLeft.ShiftY(padY);
+		Z += Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
 
-        sideRight.Return();
-        sideLeft.Return();
+		Z += Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
 
-        branch.Return();
+		Z += Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
 
-        padY = 0.76;
+		Z += Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
+	} while (--layer);
 
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
-        Z += Z_STEP / 2;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
-    }
 
-    branch.Go();
+	headEdge.Go();
+	Z += Z_STEP;
+	sprintf(chBuf, "G1 Z%.3f\n", Z);
+	WritePipe(hPipe, chBuf);
+	Z += Z_STEP;
+	sprintf(chBuf, "G1 Z%.3f\n", Z);
+	WritePipe(hPipe, chBuf);
+	Z += Z_STEP;
+	sprintf(chBuf, "G1 Z%.3f\n", Z);
+	WritePipe(hPipe, chBuf);
+	headEdge.Return();
 
-    for (layer = 204, padY = 0.76; --layer;) {
-        sideLeft.Go();
-        sideRight.Go();
-        sideRight.ShiftY(padY);
-        sideLeft.ShiftY(padY);
+	E -= 1.000;
+	sprintf(chBuf, "G1 E%.3f\n", E);
+	WritePipe(hPipe, chBuf);
 
-        sideRight.Return();
-        sideLeft.Return();
+	sprintf(chBuf, "G1 F%s X%.3f Y%.3f Z%.3f\n", F_WHOLE, X_START, Y_START, Z);
+	WritePipe(hPipe, chBuf);
 
-        sideRight.ShiftY(padY);
-        sideLeft.ShiftY(padY);
+	WritePipe(hPipe, "G4 S60\n");
 
-        sideLeft.Go();
-        sideRight.Go();
+	E += 0.100;
+	sprintf(chBuf, "G1 E%.3f\n", E);
+	WritePipe(hPipe, chBuf);
 
-        sideRight.ShiftY(padY);
-        sideLeft.ShiftY(padY);
+	E += STEP_E1 * 4;
 
-        sideRight.Return();
-        sideLeft.Return();
+	for (layer = 6, padY = 0.76; --layer;) {
 
-        sideRight.ShiftY(padY);
-        sideLeft.ShiftY(padY);
+		branch.Go();
+		sideLeft.Go();
+		sideRight.Go();
+		;
+		sideRight.ShiftY(padY);
+		sideLeft.ShiftY(padY);
 
-        sideLeft.Go();
-        sideRight.Go();
+		sideRight.Return();
+		sideLeft.Return();
 
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
-        Z += Z_STEP / 2;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
+		sideRight.ShiftY(padY);
+		sideLeft.ShiftY(padY);
 
-        padY = -0.76;
+		sideLeft.Go();
+		sideRight.Go();
 
-        sideRight.Return();
-        sideLeft.Return();
+		sideRight.ShiftY(padY);
+		sideLeft.ShiftY(padY);
 
-        sideRight.ShiftY(padY);
-        sideLeft.ShiftY(padY);
+		sideRight.Return();
+		sideLeft.Return();
 
-        sideLeft.Go();
-        sideRight.Go();
+		sideRight.ShiftY(padY);
+		sideLeft.ShiftY(padY);
 
-        sideRight.ShiftY(padY);
-        sideLeft.ShiftY(padY);
+		sideLeft.Go();
+		sideRight.Go();
 
-        sideRight.Return();
-        sideLeft.Return();
+		branch.Return();
+		branch.Go();
 
-        sideRight.ShiftY(padY);
-        sideLeft.ShiftY(padY);
+		Z += Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
+		Z += Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
+		Z += Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
+		Z += Z_STEP / 2;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
 
-        sideLeft.Go();
-        sideRight.Go();
+		padY = -0.76;
 
-        sideRight.ShiftY(padY);
-        sideLeft.ShiftY(padY);
+		sideRight.Return();
+		sideLeft.Return();
 
-        sideRight.Return();
-        sideLeft.Return();
+		sideRight.ShiftY(padY);
+		sideLeft.ShiftY(padY);
 
-        padY = 0.76;
+		sideLeft.Go();
+		sideRight.Go();
 
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
-        Z += Z_STEP;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
-        Z += Z_STEP / 2;
-        sprintf(chBuf, "G1 Z%.3f\n", Z);
-        WritePipe(hPipe, chBuf);
-    }
+		sideRight.ShiftY(padY);
+		sideLeft.ShiftY(padY);
+
+		sideRight.Return();
+		sideLeft.Return();
+
+		sideRight.ShiftY(padY);
+		sideLeft.ShiftY(padY);
+
+		sideLeft.Go();
+		sideRight.Go();
+
+		sideRight.ShiftY(padY);
+		sideLeft.ShiftY(padY);
+
+		sideRight.Return();
+		sideLeft.Return();
+
+		branch.Return();
+
+		padY = 0.76;
+
+		Z += Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
+		Z += Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
+		Z += Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
+		Z += Z_STEP / 2;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
+	}
+
+	branch.Go();
+
+	for (layer = 204, padY = 0.76; --layer;) {
+		sideLeft.Go();
+		sideRight.Go();
+		sideRight.ShiftY(padY);
+		sideLeft.ShiftY(padY);
+
+		sideRight.Return();
+		sideLeft.Return();
+
+		sideRight.ShiftY(padY);
+		sideLeft.ShiftY(padY);
+
+		sideLeft.Go();
+		sideRight.Go();
+
+		sideRight.ShiftY(padY);
+		sideLeft.ShiftY(padY);
+
+		sideRight.Return();
+		sideLeft.Return();
+
+		sideRight.ShiftY(padY);
+		sideLeft.ShiftY(padY);
+
+		sideLeft.Go();
+		sideRight.Go();
+
+		Z += Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
+		Z += Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
+		Z += Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
+		Z += Z_STEP / 2;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
+
+		padY = -0.76;
+
+		sideRight.Return();
+		sideLeft.Return();
+
+		sideRight.ShiftY(padY);
+		sideLeft.ShiftY(padY);
+
+		sideLeft.Go();
+		sideRight.Go();
+
+		sideRight.ShiftY(padY);
+		sideLeft.ShiftY(padY);
+
+		sideRight.Return();
+		sideLeft.Return();
+
+		sideRight.ShiftY(padY);
+		sideLeft.ShiftY(padY);
+
+		sideLeft.Go();
+		sideRight.Go();
+
+		sideRight.ShiftY(padY);
+		sideLeft.ShiftY(padY);
+
+		sideRight.Return();
+		sideLeft.Return();
+
+		padY = 0.76;
+
+		Z += Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
+		Z += Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
+		Z += Z_STEP;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
+		Z += Z_STEP / 2;
+		sprintf(chBuf, "G1 Z%.3f\n", Z);
+		WritePipe(hPipe, chBuf);
+	}
 
 
 
 	marlin_end(hPipe);
 
 	WritePipe(hPipe, "-EOT-");
-	
+
 	CloseHandle(hPipe);
 
-    branch.clear(); subBranch.clear(); remainBranch.clear(); left2right.clear(); right2zero.clear(); back2front.clear(); headEdge.clear();
-    sideRight.clear(); sideLeft.clear(); subSideLeft0.clear(); subSideLeft1.clear(); subSideLeft2.clear(); subSideLeft3.clear();
-    clipsLeft.clear(); clipsRight.clear(); edgeSideLeft0.clear(); edgeSideLeft1.clear(); edgeSideRight0.clear(); edgeSideRight1.clear();
+	branch.clear(); subBranch.clear(); remainBranch.clear(); left2right.clear(); right2zero.clear(); back2front.clear(); headEdge.clear();
+	sideRight.clear(); sideLeft.clear(); subSideLeft0.clear(); subSideLeft1.clear(); subSideLeft2.clear(); subSideLeft3.clear();
+	clipsLeft.clear(); clipsRight.clear(); edgeSideLeft0.clear(); edgeSideLeft1.clear(); edgeSideRight0.clear(); edgeSideRight1.clear();
 
-    return (int*)0;
+	return (int*)0;
 }

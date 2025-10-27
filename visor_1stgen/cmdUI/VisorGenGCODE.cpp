@@ -36,7 +36,7 @@ static HANDLE hPipe;
 static float E, X, Y, Z;
 
 int
-WritePipe(HANDLE hPipe, CHAR *buffer)
+WritePipe(HANDLE hPipe, CHAR* buffer)
 {
 	DWORD read;
 	DWORD written;
@@ -44,11 +44,11 @@ WritePipe(HANDLE hPipe, CHAR *buffer)
 
 
 	WriteFile(hPipe, buffer, strlen(buffer), &written, NULL);
-	
+
 	ZeroMemory(EOT, 2);
 
 
-	while(!ReadFile(hPipe, EOT, 1, &read, NULL) || read != 1)
+	while (!ReadFile(hPipe, EOT, 1, &read, NULL) || read != 1)
 		Sleep(1);
 
 	if (EOT[0] != '-')
@@ -192,18 +192,18 @@ int* funcThreadGenGCODE(LPVOID lpParameter)
 	Branch BaseLeft2Right;
 
 	hPipe = CreateFile(STR_PIPE_NAME,
-					   GENERIC_READ | GENERIC_WRITE,
-					   0,
-					   NULL,
-					   OPEN_EXISTING,
-					   0,
-					   NULL);
-	
+		GENERIC_READ | GENERIC_WRITE,
+		0,
+		NULL,
+		OPEN_EXISTING,
+		0,
+		NULL);
+
 	if (hPipe == INVALID_HANDLE_VALUE) {
 		printf("Cannot open pipe.\n");
 		return (int*)-1;
 	}
-	
+
 	char buf[255];
 
 	X = X_START;
@@ -512,7 +512,7 @@ int* funcThreadGenGCODE(LPVOID lpParameter)
 		if (layer < LAYER_BRANCH) {
 			/* Left branch go */
 
-			while(Y > Y_END) {
+			while (Y > Y_END) {
 				EXTRUDE1(E);
 				ZeroMemory(chBuf, 255);
 				sprintf(chBuf, "G1 F%d Y%.3f\n", F, Y);
@@ -526,7 +526,7 @@ int* funcThreadGenGCODE(LPVOID lpParameter)
 		do {
 			EXTRUDE(E);
 
-            ZeroMemory(chBuf, 255);
+			ZeroMemory(chBuf, 255);
 			sprintf(chBuf, "G1 F%d X%.3f\n", F, X);
 			WritePipe(hPipe, chBuf);
 			X += STEP_X;
@@ -542,7 +542,7 @@ int* funcThreadGenGCODE(LPVOID lpParameter)
 		do {
 			EXTRUDE(E);
 
-            ZeroMemory(chBuf, 255);
+			ZeroMemory(chBuf, 255);
 			sprintf(chBuf, "G1 F%d X%.3f\n", F, X);
 			WritePipe(hPipe, chBuf);
 			X += STEP_X;
@@ -583,7 +583,7 @@ int* funcThreadGenGCODE(LPVOID lpParameter)
 		if (layer < LAYER_BRANCH) {
 			/* Right branch go */
 
-			while(Y < Y_START) {
+			while (Y < Y_START) {
 				EXTRUDE1(E);
 				ZeroMemory(chBuf, 255);
 				sprintf(chBuf, "G1 F%d Y%.3f\n", F, Y);
@@ -593,7 +593,7 @@ int* funcThreadGenGCODE(LPVOID lpParameter)
 
 			/* Right branch return */
 
-			while(Y > Y_END) {
+			while (Y > Y_END) {
 				EXTRUDE1(E);
 				ZeroMemory(chBuf, 255);
 				sprintf(chBuf, "G1 F%d Y%.3f\n", F, Y);
@@ -608,7 +608,7 @@ int* funcThreadGenGCODE(LPVOID lpParameter)
 
 		do {
 			EXTRUDE(E);
-            ZeroMemory(chBuf, 255);
+			ZeroMemory(chBuf, 255);
 			sprintf(chBuf, "G1 F%d X%.3f\n", F, X);
 			WritePipe(hPipe, chBuf);
 			X -= STEP_X;
@@ -620,10 +620,10 @@ int* funcThreadGenGCODE(LPVOID lpParameter)
 		} while (X > 0.000);
 
 		/* Triangle left side */
-		
+
 		do {
 			EXTRUDE(E);
-            ZeroMemory(chBuf, 255);
+			ZeroMemory(chBuf, 255);
 			sprintf(chBuf, "G1 F%d X%.3f\n", F, X);
 			WritePipe(hPipe, chBuf);
 			X -= STEP_X;
@@ -632,14 +632,14 @@ int* funcThreadGenGCODE(LPVOID lpParameter)
 			WritePipe(hPipe, chBuf);
 			Y += STEP_Y;
 
-		} while (X > -70.000);	
+		} while (X > -70.000);
 
 		layer++;
 
 		if (layer < LAYER_BRANCH) {
 			/* Left branch return */
 
-			while(Y < Y_START) {
+			while (Y < Y_START) {
 				EXTRUDE1(E);
 				ZeroMemory(chBuf, 255);
 				sprintf(chBuf, "G1 F%d Y%.3f\n", F, Y);
@@ -647,7 +647,7 @@ int* funcThreadGenGCODE(LPVOID lpParameter)
 				Y += STEP_Y;
 			}
 		}
-			
+
 		/* level up */
 
 		Z += STEP_Z;
@@ -663,18 +663,18 @@ int* funcThreadGenGCODE(LPVOID lpParameter)
 		Z += STEP_Z;
 		ZeroMemory(chBuf, 255);
 		sprintf(chBuf, "G1 F%d Z%.3f\n", F, Z);
-		WritePipe(hPipe, chBuf);		
+		WritePipe(hPipe, chBuf);
 
 		Z += STEP_Z / 2;
 		ZeroMemory(chBuf, 255);
 		sprintf(chBuf, "G1 F%d Z%.3f\n", F, Z);
-		WritePipe(hPipe, chBuf);		
+		WritePipe(hPipe, chBuf);
 	}
 
 	heat0deg(hPipe);
 
 	WritePipe(hPipe, "-EOT-");
-	
+
 	CloseHandle(hPipe);
 
 	return (int*)0;
