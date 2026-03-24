@@ -1,1 +1,1 @@
-cl calibrer_magis.cpp /link resource.res /Fe:CalibrateMagis.exe 
+cl calibrer_magis.cpp /link resource.res /out:CalibrateSigma.exe 

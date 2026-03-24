@@ -7,7 +7,7 @@
 
 #define APP_CONSOLE_TITLE           "Effervecreanet | Sigma"
 
-#define LANG_FR
+// #define LANG_FR
 
 #ifdef LANG_FR
 
