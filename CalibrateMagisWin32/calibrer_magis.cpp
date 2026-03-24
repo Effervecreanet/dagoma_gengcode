@@ -5,26 +5,34 @@
 #pragma comment (lib, "user32.lib")
 
 
-#define APP_CONSOLE_TITLE           "Effervecreanet | Magis"
+#define APP_CONSOLE_TITLE           "Effervecreanet | Sigma"
 
-// #define LANG_EN
+#define LANG_FR
 
 #ifdef LANG_FR
 
-#define APP_MSG_TITLE               "Effervecreanet - Calibrer Magis Dagoma"
+#define APP_MSG_TITLE               "Effervecreanet - Calibrer Sigma Dagoma"
 #define APP_MSG_CALIBRATE_POINT     "Point de calibrage:        "
-#define APP_MSG_ARROW_UP            "Flèche haut:   monter"
-#define APP_MSG_ARROW_DOWN          "Flèche bas:    descendre"
-#define APP_MSG_BED	            "_    (plateau lit ou support d'impression magis)"
+#define APP_MSG_UP_1				"Pressez 'a' pour monter cran (+1.000)"
+#define APP_MSG_DOWN_1				"Pressez 'z' pour descendre cran (-1.000)"
+#define APP_MSG_UP_2				"Pressez 'e' pour monter cran (+0.100)"
+#define APP_MSG_DOWN_2				"Pressez 'r' pour descendre cran (-0.100)"
+#define APP_MSG_UP_3				"Pressez 't' pour monter cran (+0.010)"
+#define APP_MSG_DOWN_3				"Pressez 'y' pour descendre cran (-0.010)"
+#define APP_MSG_BED	            "_    (plateau lit ou support d'impression sigma)"
 #define APP_MSG_ERR_1               "Erreur:    port comm serial introuvable."
 
 #else
 
-#define APP_MSG_TITLE               "Effervecreanet - Calibrate Magis Dagoma"
+#define APP_MSG_TITLE               "Effervecreanet - Calibrate Sigma Dagoma"
 #define APP_MSG_CALIBRATE_POINT     "Calibrating point:        "
-#define APP_MSG_ARROW_UP            "Up arrow:      up"
-#define APP_MSG_ARROW_DOWN          "Down arrow:    down"
-#define APP_MSG_BED	            "_    (magis bed)"
+#define APP_MSG_UP_1				"Press 'a' to level up step (+1.000)"
+#define APP_MSG_DOWN_1				"Press 'z' to level down step (-1.000)"
+#define APP_MSG_UP_2				"Press 'e' to level up step (+0.100)"
+#define APP_MSG_DOWN_2				"Press 'r' to level down step (-0.100)"
+#define APP_MSG_UP_3				"Press 't' to level up step (+0.010)"
+#define APP_MSG_DOWN_3				"Press 'y' to level down step (-0.010)"
+#define APP_MSG_BED	            "_    (sigma bed)"
 #define APP_MSG_ERR_1               "Error: unable to find serial comm"
 
 #endif
@@ -32,7 +40,9 @@
 #define PATH_COMM     "\\\\.\\COM"
 #define MAX_COMM_PORT 21
 
-#define STEP_Z  0.4
+#define STEP_Z_1  1.000
+#define STEP_Z_2  0.100
+#define STEP_Z_3  0.010
 
 static void
 consDrawRect(HANDLE hConScreenBuf, COORD cursPosStart) {
@@ -210,12 +220,32 @@ main(int argc, char** argv)
 	coordCursor.X = 3;
 	coordCursor.Y = 8;
 	SetConsoleCursorPosition(hConsOut, coordCursor);
-	WriteConsole(hConsOut, APP_MSG_ARROW_UP, sizeof(APP_MSG_ARROW_UP) - 1, &written, NULL);
+	WriteConsole(hConsOut, APP_MSG_UP_1, sizeof(APP_MSG_UP_1) - 1, &written, NULL);
 
 	coordCursor.X = 3;
 	coordCursor.Y = 9;
 	SetConsoleCursorPosition(hConsOut, coordCursor);
-	WriteConsole(hConsOut, APP_MSG_ARROW_DOWN, sizeof(APP_MSG_ARROW_DOWN) - 1, &written, NULL);
+	WriteConsole(hConsOut, APP_MSG_DOWN_1, sizeof(APP_MSG_DOWN_1) - 1, &written, NULL);
+
+	coordCursor.X = 3;
+	coordCursor.Y = 10;
+	SetConsoleCursorPosition(hConsOut, coordCursor);
+	WriteConsole(hConsOut, APP_MSG_UP_2, sizeof(APP_MSG_UP_2) - 1, &written, NULL);
+	
+	coordCursor.X = 3;
+	coordCursor.Y = 11;
+	SetConsoleCursorPosition(hConsOut, coordCursor);
+	WriteConsole(hConsOut, APP_MSG_DOWN_2, sizeof(APP_MSG_DOWN_2) - 1, &written, NULL);
+
+	coordCursor.X = 3;
+	coordCursor.Y = 12;
+	SetConsoleCursorPosition(hConsOut, coordCursor);
+	WriteConsole(hConsOut, APP_MSG_UP_3, sizeof(APP_MSG_UP_3) - 1, &written, NULL);
+
+	coordCursor.X = 3;
+	coordCursor.Y = 13;
+	SetConsoleCursorPosition(hConsOut, coordCursor);
+	WriteConsole(hConsOut, APP_MSG_DOWN_3, sizeof(APP_MSG_DOWN_3) - 1, &written, NULL);
 
 	coordCursor.X = 60;
 	coordCursor.Y = 7;
@@ -250,13 +280,27 @@ main(int argc, char** argv)
 				if (inputRecord[0].Event.KeyEvent.wVirtualKeyCode == VK_SPACE) {
 					break;
 				}
-				else if (inputRecord[0].Event.KeyEvent.wVirtualKeyCode == VK_UP) {
-					Z += STEP_Z;
-				}
-				else if (inputRecord[0].Event.KeyEvent.wVirtualKeyCode == VK_DOWN) {
-					Z -= STEP_Z;
-				}
-				else {
+
+				switch (inputRecord[0].Event.KeyEvent.wVirtualKeyCode) {
+				case 'A':
+					Z += STEP_Z_1;
+					break;
+				case 'Z':
+					Z -= STEP_Z_1;
+					break;
+				case 'E':
+					Z += STEP_Z_2;
+					break;
+				case 'R':
+					Z -= STEP_Z_2;
+					break;
+				case 'T':
+					Z += STEP_Z_3;
+					break;
+				case 'Y':
+					Z -= STEP_Z_3;
+					break;
+				default:
 					continue;
 				}
 
