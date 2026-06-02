@@ -383,7 +383,7 @@ clear:
 		STEP_E1 = STEP_E2 = 0.015;
 		break;
 	default:
-		return -1;
+		goto clear;
 	}
 
 	hFile = CreateFile("dagoma0.g",
