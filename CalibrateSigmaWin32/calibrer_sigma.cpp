@@ -7,7 +7,7 @@
 
 #define APP_CONSOLE_TITLE           "Effervecreanet | Sigma"
 
-// #define LANG_FR
+#define LANG_FR
 
 #ifdef LANG_FR
 
@@ -190,6 +190,7 @@ main(int argc, char** argv)
 	float Z = 200.000;
 	CHAR marlinBuffer[255], * p1;
 	HWND consoleWindow;
+	FILE* fp;
 
 	system("chcp 28591");
 	system("cls");
@@ -271,6 +272,7 @@ main(int argc, char** argv)
 	coordNozzle.X = 63;
 	coordNozzle.Y = 7;
 
+	fp = fopen("calibrate_sigma_z.txt", "w");
 	for (;;) {
 		ZeroMemory(inputRecord, sizeof(INPUT_RECORD) * 7);
 		if (GetNumberOfConsoleInputEvents(hConsInp, &read) &&
@@ -303,11 +305,15 @@ main(int argc, char** argv)
 				default:
 					continue;
 				}
-
+				
+				fprintf(fp, "AAA\n");
+				fflush(fp);
 				ZeroMemory(marlinBuffer, 255);
 				sprintf(marlinBuffer, "G1 F600 Z%.3f\n", Z);
 				WriteFile(hSerial, marlinBuffer, strlen(marlinBuffer), &written, NULL);
 
+				fprintf(fp, "BBB\n");
+				fflush(fp);
 				ZeroMemory(marlinBuffer, 255);
 				p1 = marlinBuffer;
 				do {
@@ -317,21 +323,29 @@ main(int argc, char** argv)
 				} while (read == 1 && strlen(marlinBuffer) < 254);
 
 
+				fprintf(fp, "CCC\n");
+				fflush(fp);
 				coordCursor.X = 3 + sizeof(APP_MSG_CALIBRATE_POINT);
 				coordCursor.Y = 6;
 				SetConsoleCursorPosition(hConsOut, coordCursor);
 				WriteConsole(hConsOut, "          ", 10, &written, NULL);
 
+				fprintf(fp, "DDD\n");
+				fflush(fp);
 				coordCursor.X = 3 + sizeof(APP_MSG_CALIBRATE_POINT);
 				coordCursor.Y = 6;
 				SetConsoleCursorPosition(hConsOut, coordCursor);
 
+				fprintf(fp, "EEE\n");
+				fflush(fp);
 				ZeroMemory(marlinBuffer, 255);
 				sprintf(marlinBuffer, "%.3f", Z);
 				SetConsoleTextAttribute(hConsOut, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
 				WriteConsole(hConsOut, marlinBuffer, strlen(marlinBuffer), &written, NULL);
 				SetConsoleTextAttribute(hConsOut, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
 
+				fprintf(fp, "FFF\n");
+				fflush(fp);
 				if (coordNozzle.Y >= 7 + 12)
 					coordNozzle.Y = 8;
 				else
