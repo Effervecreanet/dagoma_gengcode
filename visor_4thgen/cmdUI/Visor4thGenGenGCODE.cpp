@@ -1336,7 +1336,7 @@ int* funcThreadGenGCODE(LPVOID lpParameter)
 
 	branch.Go();
 
-	for (layer = 204, padY = 0.76; --layer;) {
+	for (layer = 174, padY = 0.76; --layer;) {
 		sideLeft.Go();
 		sideRight.Go();
 		sideRight.ShiftY(padY);
@@ -1372,7 +1372,7 @@ int* funcThreadGenGCODE(LPVOID lpParameter)
 		Z += Z_STEP;
 		sprintf(chBuf, "G1 Z%.3f\n", Z);
 		WritePipe(hPipe, chBuf);
-		Z += Z_STEP / 2;
+		Z += Z_STEP;
 		sprintf(chBuf, "G1 Z%.3f\n", Z);
 		WritePipe(hPipe, chBuf);
 
@@ -1416,7 +1416,7 @@ int* funcThreadGenGCODE(LPVOID lpParameter)
 		Z += Z_STEP;
 		sprintf(chBuf, "G1 Z%.3f\n", Z);
 		WritePipe(hPipe, chBuf);
-		Z += Z_STEP / 2;
+		Z += Z_STEP;
 		sprintf(chBuf, "G1 Z%.3f\n", Z);
 		WritePipe(hPipe, chBuf);
 	}
