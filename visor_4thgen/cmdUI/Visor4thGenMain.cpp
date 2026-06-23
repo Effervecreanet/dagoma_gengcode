@@ -2,29 +2,23 @@
 #include <stdio.h>
 #include <math.h>
 
-#include "Visor4rdGenDefs.h"
+#include "Visor4thGenDefs.h"
 
 #pragma comment(lib, "user32.lib")
 
 
-DWORD64 total_gcode_lines = VISORGEN4_TOTAL_GCODE_LINES;
+DWORD64 total_gcode_lines = VISORGEN3_TOTAL_GCODE_LINES;
 extern int* funcThreadGenGCODE(LPVOID lpParameter);
 
 enum dataType {
 	ZS,
 	HT,
-	FW,
-	DP
+	FW
 };
 
 CHAR Z_START[10];
 CHAR heatTemp[10];
 CHAR F_WHOLE[10];
-
-float STEP_E1 = 0.000;
-float STEP_E2 = 0.000;
-
-CHAR STEP_E1_E2[10];
 
 struct pBar {
 	DWORD xStart;
@@ -73,7 +67,7 @@ consDrawRect(HANDLE hConScreenBuf, COORD cursPosStart) {
 
 	SetConsoleTextAttribute(hConScreenBuf, COMMON_LVB_GRID_RVERTICAL | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
 
-	for (cursPosEnd.Y = cursPosStart.Y + 13, cursPosStart.Y++;
+	for (cursPosEnd.Y = cursPosStart.Y + 12, cursPosStart.Y++;
 		cursPosStart.Y < cursPosEnd.Y;
 		cursPosStart.Y++) {
 		SetConsoleCursorPosition(hConScreenBuf, cursPosStart);
@@ -102,7 +96,7 @@ consDrawRect(HANDLE hConScreenBuf, COORD cursPosStart) {
 	SetConsoleTextAttribute(hConScreenBuf, COMMON_LVB_GRID_LVERTICAL | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
 
 	for (;
-		cursPosStart.Y > cursPosEnd.Y - 13;
+		cursPosStart.Y > cursPosEnd.Y - 12;
 		cursPosStart.Y--) {
 		SetConsoleCursorPosition(hConScreenBuf, cursPosStart);
 		WriteConsoleA(hConScreenBuf, " ", 1, &written, NULL);
@@ -129,9 +123,6 @@ get_user_input(HANDLE consOut, HANDLE consInp, COORD cursPos, CHAR dataInput[10]
 	case FW:
 		user_info_strlen = sizeof(USER_INFO_STRING11);
 		break;
-	case DP:
-		user_info_strlen = sizeof(USER_INFO_STRING12);
-		break;
 	default:
 		break;
 	}
@@ -148,8 +139,7 @@ get_user_input(HANDLE consOut, HANDLE consInp, COORD cursPos, CHAR dataInput[10]
 					((p1 = strchr(&dataInput[0], '.')) != NULL && strchr(++p1, '.') != NULL) ||
 					((dt == ZS && (atof(dataInput) < -40 || atof(dataInput) > 200))) ||
 					((dt == HT && (atof(dataInput) < 170 || atof(dataInput) > 270))) ||
-					((dt == FW && (atof(dataInput) < 80 || atof(dataInput) > 600))) ||
-					((dt == DP && (atof(dataInput) < 1 || atof(dataInput) > 5)))) {
+					((dt == FW && (atof(dataInput) < 80 || atof(dataInput) > 600)))) {
 					cursPos.X = 4;
 					cursPos.Y = 14;
 					SetConsoleCursorPosition(consOut, cursPos);
@@ -256,7 +246,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
 	HANDLE hThrdObj3d;
 	HANDLE hFile;
 	DWORD dwThrdId;
-	CHAR chBuf[80];
+	CHAR chBuf[64];
 	DWORD read;
 	DWORD written;
 	CHAR c;
@@ -357,35 +347,6 @@ clear:
 	if (get_user_input(hConsStdOut, hConsoleInput, cursPos, F_WHOLE, FW) < 0)
 		goto clear;
 
-	cursPos.X = 4;
-	cursPos.Y = 19;
-	SetConsoleCursorPosition(hConsStdOut, cursPos);
-	WriteConsole(hConsStdOut, USER_INFO_STRING12, sizeof(USER_INFO_STRING12) - 1, &written, NULL);
-
-	FlushConsoleInputBuffer(hConsoleInput);
-	if (get_user_input(hConsStdOut, hConsoleInput, cursPos, STEP_E1_E2, DP) < 0)
-		goto clear;
-
-	switch (STEP_E1_E2[0]) {
-	case '1':
-		STEP_E1 = STEP_E2 = 0.011;
-		break;
-	case '2':
-		STEP_E1 = STEP_E2 = 0.012;
-		break;
-	case '3':
-		STEP_E1 = STEP_E2 = 0.013;
-		break;
-	case '4':
-		STEP_E1 = STEP_E2 = 0.014;
-		break;
-	case '5':
-		STEP_E1 = STEP_E2 = 0.015;
-		break;
-	default:
-		goto clear;
-	}
-
 	hFile = CreateFile("dagoma0.g",
 		GENERIC_WRITE,
 		0,
@@ -427,10 +388,10 @@ clear:
 
 	FlushConsoleInputBuffer(hConsoleInput);
 
-	ZeroMemory(chBuf, 80);
+	ZeroMemory(chBuf, 64);
 	for (current_gcode_lines = 0, cursPos.Y = 13, cursPos.X = 4 + sizeof(USER_INFO_STRING4) - 1;;) {
-		memset(chBuf, ' ', 79);
-		while (!ReadFile(hNamedPipe, chBuf, 79, &read, NULL));
+		memset(chBuf, ' ', 63);
+		while (!ReadFile(hNamedPipe, chBuf, 63, &read, NULL));
 
 		if (*chBuf == '-' && strncmp(chBuf, "-EOT-", 5) == 0) {
 			coordPBar.X = pbar.xCurrent++;
@@ -468,7 +429,7 @@ clear:
 		WriteFile(hNamedPipe, "-", 1, &written, NULL);
 		SetConsoleCursorPosition(hConsStdOut, cursPos);
 		*(chBuf + --read) = ' ';
-		WriteConsole(hConsStdOut, chBuf, 79, &written, NULL);
+		WriteConsole(hConsStdOut, chBuf, 63, &written, NULL);
 	}
 
 

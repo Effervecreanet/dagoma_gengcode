@@ -7,7 +7,7 @@
 #include <list>
 #include <vector>
 
-#include "Visor4rdGenDefs.h"
+#include "Visor4thGenDefs.h"
 
 using namespace std;
 
@@ -15,22 +15,14 @@ using namespace std;
 #define Y_STEP 0.10
 #define X_STEP 0.10
 
-/*
-#define STEP_E1 0.012
-#define STEP_E2 0.012
-*/
-
-#define X_START -70.00
-#define Y_START 74.00
-#define Y_END -74.00
+#define X_START -70.000
+#define Y_START 74.000
+#define Y_END -74.000
 #define Y_EDGE -96.398
-
 
 #define LAYER_BRANCH 80
 
-extern float STEP_E1;
-extern float STEP_E2;
-
+float STEP_E1, STEP_E2;
 float Z;
 float E = 0.0;
 
@@ -55,7 +47,7 @@ static void stamp(void)
 	WritePipe(hPipe, buff);
 	memset(buff, 0, 128);
 	//  sprintf(buff, "; With z_start: %s heat temp: %s speed: %s\n", Z_START, heatTemp, F_WHOLE);
-	sprintf(buff, "; With z_start: %s heat temp: %s speed: %s density: %.3f\n", Z_START, heatTemp, F_WHOLE, STEP_E1);
+	sprintf(buff, "; With z_start: %s heat temp: %s speed: %s\n", Z_START, heatTemp, F_WHOLE);
 	WritePipe(hPipe, buff);
 	WritePipe(hPipe, "; Author: Franck Lesage\n");
 	WritePipe(hPipe, "; Website: http://www.effervecrea.net\n");
@@ -434,6 +426,8 @@ int* funcThreadGenGCODE(LPVOID lpParameter)
 	/* Init marlin abs_pos */
 	init_marlin(hPipe);
 
+	STEP_E1 = STEP_E2 = 0.012;
+
 	for (layer = 0, padX = 0.76; layer < 2; ++layer) {
 		clipsLeft.Go();
 		clipsLeft.ShiftX(padX);
@@ -491,7 +485,6 @@ int* funcThreadGenGCODE(LPVOID lpParameter)
 		clipsLeft.ShiftX(padX);
 		clipsLeft.Return();
 		clipsLeft.ShiftX(padX);
-
 		if (padX <= 0.9 && padX >= 0.7)
 			padX = -0.76;
 		else
@@ -525,16 +518,10 @@ int* funcThreadGenGCODE(LPVOID lpParameter)
 	}
 
 
-	E -= 1.000;
-	sprintf(chBuf, "G1 E%.3f\n", E);
-	WritePipe(hPipe, chBuf);
-
 	Z = Z_START[0] == '-' ? -(atof(&Z_START[1])) : atof(Z_START);
 
 	sprintf(chBuf, "G1 F%s X%.3f Y%.3f Z%.3f\n", F_WHOLE, (float)90.00, (float)-35.00, Z);
 	WritePipe(hPipe, chBuf);
-
-	E += 0.900;
 
 	for (layer = 0, padX = 0.76; layer < 2; ++layer) {
 		clipsRight.Go();
@@ -626,18 +613,10 @@ int* funcThreadGenGCODE(LPVOID lpParameter)
 	}
 
 
-
-
-	E -= 0.450;
-	sprintf(chBuf, "G1 E%.3f\n", E);
-	WritePipe(hPipe, chBuf);
-
 	Z = Z_START[0] == '-' ? -(atof(&Z_START[1])) : atof(Z_START);
 	ZeroMemory(chBuf, 255);
 	sprintf(chBuf, "G1 F%s X%.3f Y%.3f Z%.3f\n", F_WHOLE, X_START, Y_START, Z);
 	WritePipe(hPipe, chBuf);
-
-	E += 0.450;
 
 	BaseLeft2Right.Go2();
 
@@ -913,6 +892,8 @@ int* funcThreadGenGCODE(LPVOID lpParameter)
 	sprintf(chBuf, "G1 F%s X%.3f Y%.3f Z%.3f\n", F_WHOLE, X_START, Y_START, Z);
 	WritePipe(hPipe, chBuf);
 
+	STEP_E1 = STEP_E2 = 0.013;
+
 	for (layer = 0, padY = 1; layer < LAYER_BRANCH / 10; ++layer) {
 
 		branch.Go();
@@ -1075,17 +1056,8 @@ int* funcThreadGenGCODE(LPVOID lpParameter)
 		WritePipe(hPipe, chBuf);
 	}
 
-	E += 1.400;
-	sprintf(chBuf, "G1 E%.3f\n", E);
-	WritePipe(hPipe, chBuf);
-
-	WritePipe(hPipe, "G4 S2\n");
-
-	E += 1.400;
-	sprintf(chBuf, "G1 E%.3f\n", E);
-	WritePipe(hPipe, chBuf);
-
-	E += STEP_E1 * 11;
+	branch.Go();
+	branch.Return();
 
 	for (layer = LAYER_BRANCH - (LAYER_BRANCH / 10); --layer;) {
 		branch.Go();
@@ -1122,10 +1094,6 @@ int* funcThreadGenGCODE(LPVOID lpParameter)
 		WritePipe(hPipe, chBuf);
 	}
 
-	E -= 0.450;
-	sprintf(chBuf, "G1 E%.3f\n", E);
-	WritePipe(hPipe, chBuf);
-
 	right2zero.Go2(true);
 	back2front.Go(true);
 
@@ -1155,23 +1123,22 @@ int* funcThreadGenGCODE(LPVOID lpParameter)
 		WritePipe(hPipe, chBuf);
 	}
 
-	E += 1.000;
-	sprintf(chBuf, "G1 E%.3f\n", E);
-	WritePipe(hPipe, chBuf);
-
-	WritePipe(hPipe, "G4 S2\n");
-
-	E += 1.000;
-	sprintf(chBuf, "G1 E%.3f\n", E);
-	WritePipe(hPipe, chBuf);
-
-	E += STEP_E1;
-	E += STEP_E1;
-	E += STEP_E1;
-	E += STEP_E1;
-
 	layer = LAYER_BRANCH - (LAYER_BRANCH / 10);
 	layer--;
+
+	edgeSideLeft1.Go();
+	edgeSideLeft1.Return();
+	headEdge.Return();
+	edgeSideLeft0.Go();
+	edgeSideLeft0.Return();
+
+	headEdge.Go();
+
+	edgeSideRight0.Go();
+	edgeSideRight0.Return();
+	headEdge.Return();
+	edgeSideRight1.Go();
+	edgeSideRight1.Return();
 
 	do {
 		edgeSideLeft1.Go();
@@ -1226,27 +1193,20 @@ int* funcThreadGenGCODE(LPVOID lpParameter)
 	WritePipe(hPipe, chBuf);
 	headEdge.Return();
 
-	E -= 1.000;
-	sprintf(chBuf, "G1 E%.3f\n", E);
-	WritePipe(hPipe, chBuf);
-
 	sprintf(chBuf, "G1 F%s X%.3f Y%.3f Z%.3f\n", F_WHOLE, X_START, Y_START, Z);
 	WritePipe(hPipe, chBuf);
 
 	WritePipe(hPipe, "G4 S60\n");
 
-	E += 0.100;
-	sprintf(chBuf, "G1 E%.3f\n", E);
-	WritePipe(hPipe, chBuf);
-
-	E += STEP_E1 * 4;
+	branch.Go();
+	branch.Return();
 
 	for (layer = 6, padY = 0.76; --layer;) {
 
 		branch.Go();
 		sideLeft.Go();
 		sideRight.Go();
-		;
+		
 		sideRight.ShiftY(padY);
 		sideLeft.ShiftY(padY);
 
@@ -1336,7 +1296,9 @@ int* funcThreadGenGCODE(LPVOID lpParameter)
 
 	branch.Go();
 
-	for (layer = 160, padY = 0.76; --layer;) {
+	STEP_E1 = STEP_E2 = 0.012;
+
+	for (layer = 204, padY = 0.76; --layer;) {
 		sideLeft.Go();
 		sideRight.Go();
 		sideRight.ShiftY(padY);
@@ -1372,7 +1334,7 @@ int* funcThreadGenGCODE(LPVOID lpParameter)
 		Z += Z_STEP;
 		sprintf(chBuf, "G1 Z%.3f\n", Z);
 		WritePipe(hPipe, chBuf);
-		Z += Z_STEP;
+		Z += Z_STEP / 2;
 		sprintf(chBuf, "G1 Z%.3f\n", Z);
 		WritePipe(hPipe, chBuf);
 
@@ -1407,9 +1369,6 @@ int* funcThreadGenGCODE(LPVOID lpParameter)
 
 		padY = 0.76;
 
-		Z += Z_STEP;
-		sprintf(chBuf, "G1 Z%.3f\n", Z);
-		WritePipe(hPipe, chBuf);
 		Z += Z_STEP;
 		sprintf(chBuf, "G1 Z%.3f\n", Z);
 		WritePipe(hPipe, chBuf);
