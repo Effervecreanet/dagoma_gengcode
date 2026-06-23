@@ -892,7 +892,7 @@ int* funcThreadGenGCODE(LPVOID lpParameter)
 	sprintf(chBuf, "G1 F%s X%.3f Y%.3f Z%.3f\n", F_WHOLE, X_START, Y_START, Z);
 	WritePipe(hPipe, chBuf);
 
-	STEP_E1 = STEP_E2 = 0.013;
+	STEP_E1 = STEP_E2 = 0.0135;
 
 	for (layer = 0, padY = 1; layer < LAYER_BRANCH / 10; ++layer) {
 
@@ -992,6 +992,8 @@ int* funcThreadGenGCODE(LPVOID lpParameter)
 		sprintf(chBuf, "G1 Z%.3f\n", Z);
 		WritePipe(hPipe, chBuf);
 	}
+
+	STEP_E1 = STEP_E2 = 0.0130;
 
 	for (layer = LAYER_BRANCH - (LAYER_BRANCH / 10); --layer;) {
 		branch.Go();
